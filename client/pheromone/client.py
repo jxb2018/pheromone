@@ -12,6 +12,7 @@ from anna.lattices import (
     LWWPairLattice
 )
 
+
 def generate_timestamp(tid=1):
     t = time.time()
     p = 10
@@ -19,7 +20,9 @@ def generate_timestamp(tid=1):
         p *= 10
     return int(t * p + tid)
 
+
 default_rerun_timeout = 3000
+
 
 class PheromoneClient():
     def __init__(self, mngt_ip, kvs_addr, ip, thread_id=0, context=None):
@@ -27,7 +30,7 @@ class PheromoneClient():
             self.context = zmq.Context(1)
         else:
             self.context = context
-        
+
         if ip:
             self.ort = OperationRequestThread(ip, thread_id)
         else:  # If the IP is not provided, we attempt to infer it.
@@ -55,7 +58,7 @@ class PheromoneClient():
         self.response_address = 'tcp://' + ip + ':' + str(response_port)
 
         self.rid = 0
-    
+
     def get_kvs_object(self, key):
         lattice = self.kvs_client.get(key)[key]
         return lattice.reveal()
@@ -63,7 +66,7 @@ class PheromoneClient():
     def put_kvs_object(self, key, value):
         if isinstance(value, bytes):
             lattice = LWWPairLattice(generate_timestamp(0), value)
-        else: # string
+        else:  # string
             lattice = LWWPairLattice(generate_timestamp(0), bytes(value, 'utf-8'))
         return self.kvs_client.put(key, lattice)
 
@@ -71,7 +74,7 @@ class PheromoneClient():
         coord_thread = self._try_get_app_coord(app_name)
         req = BucketOperationRequest()
         req = self._prepare_request(req, CREATE_BUCKET, self.ort.bucket_req_connect_address())
-        
+
         req.bucket_name = bucket_name
         req.app_name = app_name
 
@@ -109,13 +112,13 @@ class PheromoneClient():
 
         req = TriggerOperationRequest()
         req = self._prepare_request(req, ADD_TRIGGER, self.ort.trigger_req_connect_address())
-        
+
         req.app_name = app_name
         req.bucket_name = bucket_name
         req.trigger_name = trigger_name
         req.primitive_type = primitive_type
         req.trigger_option = trigger_option
-        
+
         if primitive_type == IMMEDIATE:
             prm = ImmediatePrimitive()
             prm.function = primitive['function']
@@ -148,7 +151,7 @@ class PheromoneClient():
             prm = ByTimePrimitive()
             prm.function = primitive['function']
             prm.time_window = primitive['time_window']
-        
+
         req.primitive = prm.SerializeToString()
 
         def parse_hints(req, hint):
@@ -158,7 +161,7 @@ class PheromoneClient():
                 h.source_key = hint[1]
             h.timeout = hint[2] if len(hint) > 2 else default_rerun_timeout
 
-        if hints is not None: 
+        if hints is not None:
             if isinstance(hints, tuple):
                 parse_hints(req, hints)
             elif isinstance(hints, list):
@@ -176,7 +179,8 @@ class PheromoneClient():
             logging.info('Successfully adding trigger {} to bucket {}'.format(trigger_name, bucket_name))
             return True
         else:
-            logging.error('Error {} in adding trigger {} to bucket {}'.format(response.error, trigger_name, bucket_name))
+            logging.error(
+                'Error {} in adding trigger {} to bucket {}'.format(response.error, trigger_name, bucket_name))
             return False
 
     def delete_trigger(self, app_name, bucket_name, trigger_name):
@@ -196,7 +200,8 @@ class PheromoneClient():
             logging.info('Successfully deleting trigger {} from bucket {}'.format(trigger_name, bucket_name))
             return True
         else:
-            logging.error('Error {} in deleting trigger {} from bucket {}'.format(response.error, trigger_name, bucket_name))
+            logging.error(
+                'Error {} in deleting trigger {} from bucket {}'.format(response.error, trigger_name, bucket_name))
             return False
 
     def create_function(self, name, path):
@@ -287,7 +292,7 @@ class PheromoneClient():
             r.ParseFromString(self.mngt_socket.recv())
             self.app_coords[app_name] = OperationThread(r.coord_ip, r.thread_id)
             print(f'Query from management. {r.coord_ip}, {r.thread_id}')
-        
+
         return self.app_coords[app_name]
 
     def _prepare_request(self, req, op_type, resp_addr):

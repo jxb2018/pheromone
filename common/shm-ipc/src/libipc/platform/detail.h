@@ -74,42 +74,42 @@ using std::min;
 #else /*__cplusplus < 201703L*/
 
 namespace ipc {
-namespace detail {
+    namespace detail {
 
 // deduction guides for std::unique_ptr
-template <typename T>
-constexpr auto unique_ptr(T* p) noexcept {
-    return std::unique_ptr<T> { p };
-}
+        template<typename T>
+        constexpr auto unique_ptr(T *p) noexcept {
+            return std::unique_ptr<T>{p};
+        }
 
-template <typename T, typename D>
-constexpr auto unique_ptr(T* p, D&& d) noexcept {
-    return std::unique_ptr<T, std::decay_t<D>> { p, std::forward<D>(d) };
-}
+        template<typename T, typename D>
+        constexpr auto unique_ptr(T *p, D &&d) noexcept {
+            return std::unique_ptr<T, std::decay_t<D>>{p, std::forward<D>(d)};
+        }
 
 // deduction guides for std::unique_lock
-template <typename T>
-constexpr auto unique_lock(T&& lc) noexcept {
-    return std::unique_lock<std::decay_t<T>> { std::forward<T>(lc) };
-}
+        template<typename T>
+        constexpr auto unique_lock(T &&lc) noexcept {
+            return std::unique_lock<std::decay_t<T>>{std::forward<T>(lc)};
+        }
 
 // deduction guides for std::shared_lock
-template <typename T>
-constexpr auto shared_lock(T&& lc) noexcept {
-    return std::shared_lock<std::decay_t<T>> { std::forward<T>(lc) };
-}
+        template<typename T>
+        constexpr auto shared_lock(T &&lc) noexcept {
+            return std::shared_lock<std::decay_t<T>>{std::forward<T>(lc)};
+        }
 
-template <typename T>
-constexpr const T& (max)(const T& a, const T& b) {
-    return (a < b) ? b : a;
-}
+        template<typename T>
+        constexpr const T &(max)(const T &a, const T &b) {
+            return (a < b) ? b : a;
+        }
 
-template <typename T>
-constexpr const T& (min)(const T& a, const T& b) {
-    return (b < a) ? b : a;
-}
+        template<typename T>
+        constexpr const T &(min)(const T &a, const T &b) {
+            return (b < a) ? b : a;
+        }
 
 #endif/*__cplusplus < 201703L*/
 
-} // namespace detail
+    } // namespace detail
 } // namespace ipc

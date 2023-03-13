@@ -5,9 +5,9 @@ SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/target)
 
 # INCLUDE_DIRECTORIES(../../include/scheduler)
 
-SET(MANAGEMENT_SOURCE 
-    manager_server.cpp
-)
+SET(MANAGEMENT_SOURCE
+        manager_server.cpp
+        )
 
 ADD_EXECUTABLE(manager ${MANAGEMENT_SOURCE})
 TARGET_LINK_LIBRARIES(manager ${CACHE_DEPENDENCIES})

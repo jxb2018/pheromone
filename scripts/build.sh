@@ -1,6 +1,6 @@
 #!/bin/bash
 
-args=( -j -b -t )
+args=(-j -b -t)
 containsElement() {
   local e match="$1"
   shift
@@ -10,39 +10,37 @@ containsElement() {
 
 while getopts ":j:b:tg" opt; do
   case $opt in
-   j )
-     MAKE_THREADS=$OPTARG
-     if containsElement $OPTARG "${args[@]}"
-     then
-       echo "Missing argument to flag $opt"
-       exit 1
-     else
-       echo "make set to run on $OPTARG threads" >&2
-     fi
-     ;;
-   b )
-     TYPE=$OPTARG
-     if containsElement $OPTARG "${args[@]}"
-     then
-       echo "Missing argument to flag $opt"
-       exit 1
-     else
-       echo "build type set to $OPTARG" >&2
-     fi
-     ;;
-   t )
-     TEST="-DBUILD_TEST=ON"
-     echo "Testing enabled..."
-     ;;
-   g )
-     COMPILER="/usr/bin/g++"
-     RUN_FORMAT=""
-     echo "Compiler set to GNU g++..."
-     ;;
-   \? )
-     echo "Invalid option: -$OPTARG" >&2
-     exit 1
-     ;;
+  j)
+    MAKE_THREADS=$OPTARG
+    if containsElement $OPTARG "${args[@]}"; then
+      echo "Missing argument to flag $opt"
+      exit 1
+    else
+      echo "make set to run on $OPTARG threads" >&2
+    fi
+    ;;
+  b)
+    TYPE=$OPTARG
+    if containsElement $OPTARG "${args[@]}"; then
+      echo "Missing argument to flag $opt"
+      exit 1
+    else
+      echo "build type set to $OPTARG" >&2
+    fi
+    ;;
+  t)
+    TEST="-DBUILD_TEST=ON"
+    echo "Testing enabled..."
+    ;;
+  g)
+    COMPILER="/usr/bin/g++"
+    RUN_FORMAT=""
+    echo "Compiler set to GNU g++..."
+    ;;
+  \?)
+    echo "Invalid option: -$OPTARG" >&2
+    exit 1
+    ;;
   esac
 done
 

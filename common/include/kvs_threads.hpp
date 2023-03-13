@@ -33,140 +33,144 @@ const unsigned bucketQueryPort = 8150;
 const unsigned bucketUpdatePort = 8250;
 
 class KVSThread {
-  Address ip_;
-  Address ip_base_;
-  unsigned tid_;
+    Address ip_;
+    Address ip_base_;
+    unsigned tid_;
 
- public:
-  KVSThread(Address ip, unsigned tid) :
-      ip_(ip),
-      ip_base_("tcp://" + ip_ + ":"),
-      tid_(tid) {}
+public:
+    KVSThread(Address ip, unsigned tid) :
+            ip_(ip),
+            ip_base_("tcp://" + ip_ + ":"),
+            tid_(tid) {}
 
-  Address ip() const { return ip_; }
+    Address ip() const { return ip_; }
 
-  unsigned tid() const { return tid_; }
+    unsigned tid() const { return tid_; }
 
-  Address local_get_bind_address() const { return "ipc:///requests/get"; }
+    Address local_get_bind_address() const { return "ipc:///requests/get"; }
 
-  Address local_get_connect_address() const { return "ipc:///requests/get"; }
+    Address local_get_connect_address() const { return "ipc:///requests/get"; }
 
-  Address local_put_bind_address() const { return "ipc:///requests/put"; }
+    Address local_put_bind_address() const { return "ipc:///requests/put"; }
 
-  Address local_put_connect_address() const { return "ipc:///requests/put"; }
+    Address local_put_connect_address() const { return "ipc:///requests/put"; }
 
-  Address remote_get_bind_address() const { return kBindBase + std::to_string(tid_ + kRemoteGetPort); }
+    Address remote_get_bind_address() const { return kBindBase + std::to_string(tid_ + kRemoteGetPort); }
 
-  Address remote_get_connect_address() const { return ip_base_ + std::to_string(tid_ + kRemoteGetPort); }
+    Address remote_get_connect_address() const { return ip_base_ + std::to_string(tid_ + kRemoteGetPort); }
 };
 
 
 class CommHelperThread {
-  Address ip_;
-  Address ip_base_;
-  unsigned tid_;
+    Address ip_;
+    Address ip_base_;
+    unsigned tid_;
 
- public:
-  CommHelperThread(Address ip, unsigned tid) :
-      ip_(ip),
-      ip_base_("tcp://" + ip_ + ":"),
-      tid_(tid) {}
+public:
+    CommHelperThread(Address ip, unsigned tid) :
+            ip_(ip),
+            ip_base_("tcp://" + ip_ + ":"),
+            tid_(tid) {}
 
-  Address ip() const { return ip_; }
+    Address ip() const { return ip_; }
 
-  unsigned tid() const { return tid_; }
-  
-  Address remote_response_bind_address() const { return kBindBase + std::to_string(tid_ + kRemoteResponsePort); }
+    unsigned tid() const { return tid_; }
 
-  Address remote_response_connect_address() const { return ip_base_ + std::to_string(tid_ + kRemoteResponsePort); }
+    Address remote_response_bind_address() const { return kBindBase + std::to_string(tid_ + kRemoteResponsePort); }
 
-  Address key_query_bind_address() const { return kBindBase + std::to_string(tid_ + kQueryPort); }
+    Address remote_response_connect_address() const { return ip_base_ + std::to_string(tid_ + kRemoteResponsePort); }
 
-  Address key_query_connect_address() const { return ip_base_ + std::to_string(tid_ + kQueryPort); }
+    Address key_query_bind_address() const { return kBindBase + std::to_string(tid_ + kQueryPort); }
 
-  Address notify_put_bind_address() const { return kBindBase + std::to_string(tid_ + kNotifyPort); }
+    Address key_query_connect_address() const { return ip_base_ + std::to_string(tid_ + kQueryPort); }
 
-  Address notify_put_connect_address() const { return ip_base_ + std::to_string(tid_ + kNotifyPort); }
+    Address notify_put_bind_address() const { return kBindBase + std::to_string(tid_ + kNotifyPort); }
 
-  Address trigger_update_bind_address() const { return kBindBase + std::to_string(tid_ + TriggerUpdatePort); }
+    Address notify_put_connect_address() const { return ip_base_ + std::to_string(tid_ + kNotifyPort); }
 
-  Address trigger_update_connect_address() const { return ip_base_ + std::to_string(tid_ + TriggerUpdatePort); }
+    Address trigger_update_bind_address() const { return kBindBase + std::to_string(tid_ + TriggerUpdatePort); }
 
-  Address data_access_server_bind_address() const { return kBindBase + std::to_string(tid_ + dataAccessServerPort); }
+    Address trigger_update_connect_address() const { return ip_base_ + std::to_string(tid_ + TriggerUpdatePort); }
 
-  Address data_access_server_connect_address() const { return ip_base_ + std::to_string(tid_ + dataAccessServerPort); }
+    Address data_access_server_bind_address() const { return kBindBase + std::to_string(tid_ + dataAccessServerPort); }
 
-  Address data_access_client_bind_address() const { return kBindBase + std::to_string(tid_ + dataAccessClientPort); }
+    Address data_access_server_connect_address() const {
+        return ip_base_ + std::to_string(tid_ + dataAccessServerPort);
+    }
 
-  Address data_access_client_connect_address() const { return ip_base_ + std::to_string(tid_ + dataAccessClientPort); }
+    Address data_access_client_bind_address() const { return kBindBase + std::to_string(tid_ + dataAccessClientPort); }
+
+    Address data_access_client_connect_address() const {
+        return ip_base_ + std::to_string(tid_ + dataAccessClientPort);
+    }
 };
 
 class HandlerThread {
-  Address ip_;
-  Address ip_base_;
-  unsigned tid_;
+    Address ip_;
+    Address ip_base_;
+    unsigned tid_;
 
- public:
-  HandlerThread() {}
+public:
+    HandlerThread() {}
 
-  HandlerThread(Address ip, unsigned tid) :
-      ip_(ip),
-      tid_(tid),
-      ip_base_("tcp://" + ip_ + ":") {}
+    HandlerThread(Address ip, unsigned tid) :
+            ip_(ip),
+            tid_(tid),
+            ip_base_("tcp://" + ip_ + ":") {}
 
-  Address ip() const { return ip_; }
+    Address ip() const { return ip_; }
 
-  unsigned tid() const { return tid_; }
+    unsigned tid() const { return tid_; }
 
-  Address notify_handler_connect_address() const { return ip_base_ + std::to_string(tid_ + kNotifyHandlerPort);}
+    Address notify_handler_connect_address() const { return ip_base_ + std::to_string(tid_ + kNotifyHandlerPort); }
 
-  Address notify_handler_bind_address() const { return kBindBase + std::to_string(tid_ + kNotifyHandlerPort);}
+    Address notify_handler_bind_address() const { return kBindBase + std::to_string(tid_ + kNotifyHandlerPort); }
 
-  Address key_query_handler_connect_address() const {return ip_base_ + std::to_string(tid_ + kQueryHandlerPort);}
+    Address key_query_handler_connect_address() const { return ip_base_ + std::to_string(tid_ + kQueryHandlerPort); }
 
-  Address key_query_handler_bind_address() const { return kBindBase + std::to_string(tid_ + kQueryHandlerPort);}
+    Address key_query_handler_bind_address() const { return kBindBase + std::to_string(tid_ + kQueryHandlerPort); }
 
-  Address update_handler_bind_address() const { return kBindBase + std::to_string(tid_ + updateStatusHandlerPort); }
+    Address update_handler_bind_address() const { return kBindBase + std::to_string(tid_ + updateStatusHandlerPort); }
 
-  Address update_handler_connect_address() const { return ip_base_ + std::to_string(tid_ + updateStatusHandlerPort); }
-  
-  Address forward_func_bind_address() const { return kBindBase + std::to_string(tid_ + forwardFuncPort); }
+    Address update_handler_connect_address() const { return ip_base_ + std::to_string(tid_ + updateStatusHandlerPort); }
 
-  Address forward_func_connect_address() const { return ip_base_ + std::to_string(tid_ + forwardFuncPort); }
+    Address forward_func_bind_address() const { return kBindBase + std::to_string(tid_ + forwardFuncPort); }
 
-  bool has_same_ip_tid(Address ip, unsigned tid) {return ip_ == ip && tid_ == tid;}
+    Address forward_func_connect_address() const { return ip_base_ + std::to_string(tid_ + forwardFuncPort); }
+
+    bool has_same_ip_tid(Address ip, unsigned tid) { return ip_ == ip && tid_ == tid; }
 };
 
 class ManagementServerThread {
-  Address ip_;
-  Address ip_base_;
-  unsigned tid_;
+    Address ip_;
+    Address ip_base_;
+    unsigned tid_;
 
- public:
-  ManagementServerThread(Address ip, unsigned tid) :
-      ip_(ip),
-      ip_base_("tcp://" + ip_ + ":"),
-      tid_(tid) {}
+public:
+    ManagementServerThread(Address ip, unsigned tid) :
+            ip_(ip),
+            ip_base_("tcp://" + ip_ + ":"),
+            tid_(tid) {}
 
-  Address ip() const { return ip_; }
+    Address ip() const { return ip_; }
 
-  unsigned tid() const { return tid_; }
-  
-  Address bucket_query_connect_address() const {
-    return ip_base_ + std::to_string(tid_ + bucketQueryPort);
-  }
+    unsigned tid() const { return tid_; }
 
-  Address bucket_query_bind_address() const {
-    return kBindBase + std::to_string(tid_ + bucketQueryPort);
-  }
+    Address bucket_query_connect_address() const {
+        return ip_base_ + std::to_string(tid_ + bucketQueryPort);
+    }
 
-  Address bucket_update_connect_address() const { 
-    return ip_base_ + std::to_string(tid_ + bucketUpdatePort); 
-  }
+    Address bucket_query_bind_address() const {
+        return kBindBase + std::to_string(tid_ + bucketQueryPort);
+    }
 
-  Address bucket_update_bind_address() const {
-    return kBindBase + std::to_string(tid_ + bucketUpdatePort);
-  }
+    Address bucket_update_connect_address() const {
+        return ip_base_ + std::to_string(tid_ + bucketUpdatePort);
+    }
+
+    Address bucket_update_bind_address() const {
+        return kBindBase + std::to_string(tid_ + bucketUpdatePort);
+    }
 };
 
 #endif  // INCLUDE_KVS_THREADS_HPP_

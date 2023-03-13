@@ -10,25 +10,25 @@
 
 using string = std::string;
 
-template <class K, class V>
+template<class K, class V>
 using map = std::unordered_map<K, V>;
 
-template <class K, class V, class H>
+template<class K, class V, class H>
 using hmap = std::unordered_map<K, V, H>;
 
-template <class T>
+template<class T>
 using ordered_set = std::set<T>;
 
-template <class T>
+template<class T>
 using set = std::unordered_set<T>;
 
-template <class T>
+template<class T>
 using vector = std::vector<T>;
 
-template <class T>
+template<class T>
 using queue = std::queue<T>;
 
-template <class F, class S>
+template<class F, class S>
 using pair = std::pair<F, S>;
 
 using Address = std::string;

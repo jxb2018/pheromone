@@ -6,8 +6,8 @@ namespace ipc {
 
 // concept helpers
 
-template <bool Cond, typename R = void>
-using require = typename std::enable_if<Cond, R>::type;
+    template<bool Cond, typename R = void>
+    using require = typename std::enable_if<Cond, R>::type;
 
 #ifdef IPC_CONCEPT_
 #   error "IPC_CONCEPT_ has been defined."

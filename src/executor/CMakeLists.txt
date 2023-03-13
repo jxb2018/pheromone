@@ -6,9 +6,9 @@ SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/target)
 INCLUDE_DIRECTORIES(../../include/executor)
 INCLUDE_DIRECTORIES(../../include/function_interface)
 
-SET(EXECUTOR_SOURCE 
-    executor_server.cpp
-)
+SET(EXECUTOR_SOURCE
+        executor_server.cpp
+        )
 
 ADD_EXECUTABLE(executor ${EXECUTOR_SOURCE})
 TARGET_LINK_LIBRARIES(executor ${CACHE_DEPENDENCIES})

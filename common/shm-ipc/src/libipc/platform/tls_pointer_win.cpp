@@ -17,15 +17,17 @@
 */
 
 namespace ipc {
-namespace tls {
+    namespace tls {
 
-namespace {
+        namespace {
 
-void NTAPI OnTlsCallback(PVOID, DWORD dwReason, PVOID) {
-    if (dwReason == DLL_THREAD_DETACH) {
-        ipc::tls::at_thread_exit();
+            void NTAPI
+            OnTlsCallback(PVOID, DWORD
+            dwReason, PVOID) {
+            if (dwReason == DLL_THREAD_DETACH) {
+            ipc::tls::at_thread_exit();
+        }
     }
-}
 
 } // internal-linkage
 
@@ -74,22 +76,23 @@ extern "C" {
 #else /*!MINGW*/
 
 extern "C" {
-    ULONG _tls_index__ = 0;
+ULONG _tls_index__ = 0;
 
-    IPC_CRTALLOC__(".tls$AAA") char _tls_start__ = 0;
-    IPC_CRTALLOC__(".tls$ZZZ") char _tls_end__   = 0;
+IPC_CRTALLOC__(".tls$AAA") char _tls_start__ = 0;
+IPC_CRTALLOC__(".tls$ZZZ") char _tls_end__ = 0;
 
-    IPC_CRTALLOC__(".CRT$XLA") PIMAGE_TLS_CALLBACK _tls_xl_a__ = 0;
-    IPC_CRTALLOC__(".CRT$XLB") PIMAGE_TLS_CALLBACK _tls_xl_b__ = OnTlsCallback;
-    IPC_CRTALLOC__(".CRT$XLZ") PIMAGE_TLS_CALLBACK _tls_xl_z__ = 0;
+IPC_CRTALLOC__(".CRT$XLA") PIMAGE_TLS_CALLBACK _tls_xl_a__ = 0;
+IPC_CRTALLOC__(".CRT$XLB") PIMAGE_TLS_CALLBACK _tls_xl_b__ = OnTlsCallback;
+IPC_CRTALLOC__(".CRT$XLZ") PIMAGE_TLS_CALLBACK _tls_xl_z__ = 0;
 }
 
-extern "C" NX_CRTALLOC_(".tls") const IMAGE_TLS_DIRECTORY _tls_used = {
-    (ULONG_PTR)(&_tls_start__ + 1),
-    (ULONG_PTR) &_tls_end__,
-    (ULONG_PTR) &_tls_index__,
-    (ULONG_PTR) &_tls_xl_b__,
-    (ULONG)0, (ULONG)0
+extern "C" NX_CRTALLOC_(".tls")
+const IMAGE_TLS_DIRECTORY _tls_used = {
+        (ULONG_PTR)(&_tls_start__ + 1),
+        (ULONG_PTR) & _tls_end__,
+        (ULONG_PTR) & _tls_index__,
+        (ULONG_PTR) & _tls_xl_b__,
+        (ULONG) 0, (ULONG) 0
 }
 
 #endif/*!MINGW*/

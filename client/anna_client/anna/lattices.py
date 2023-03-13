@@ -101,6 +101,7 @@ class LWWPairLattice(Lattice):
 
         return res, LWW
 
+
 class SetLattice(Lattice):
     def __init__(self, value=set()):
         if type(value) != set:
@@ -299,7 +300,7 @@ class MapLattice(Lattice):
         for key in other.mp.keys:
             if key in self.mp:
                 if (not isinstance(self.mp[key], Lattice) or not
-                        isinstance(other.mp[key], Lattice)):
+                isinstance(other.mp[key], Lattice)):
                     raise ValueError('Cannot merge a MapLattice with values' +
                                      ' that are not lattice types.')
                 self.mp[key].merge(other.mp[key])
@@ -337,7 +338,7 @@ class VectorClock(MapLattice):
         for val in mp.values():
             if type(val) != MaxIntLattice:
                 raise ValueError(('VectorClock values must be MaxIntLattices,'
-                                 + ' not %s.') % str(type(val)))
+                                  + ' not %s.') % str(type(val)))
 
     def assign(self, mp):
         if type(mp) != dict:
@@ -474,11 +475,12 @@ class MultiKeyCausalLattice(Lattice):
 
         return mkcv, MULTI_CAUSAL
 
+
 class PriorityLattice(Lattice):
     def __init__(self, priority, value):
         if type(priority) != float or type(value) != bytes:
             raise ValueError('PriorityLattice must be a double-bytes pair.')
-        
+
         self.priority = priority
         self.value = value
 
@@ -488,7 +490,7 @@ class PriorityLattice(Lattice):
     def assign(self, value):
         if type(value) != str:
             value = bytes(value, 'utf-8')
-            
+
         if type(value) != tuple or type(value[0]) != float or type(value[1]) != bytes:
             raise ValueError('PriorityLattice must be a double-bytes pair.')
 
@@ -505,5 +507,5 @@ class PriorityLattice(Lattice):
         res = PriorityValue()
         res.priority = self.priority
         res.value = self.value
-        
+
         return res, PRIORITY

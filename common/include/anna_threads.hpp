@@ -32,94 +32,95 @@ const unsigned kCacheUpdatePort = 7150;
 const string kBindBase = "tcp://*:";
 
 class CacheThread {
-  Address ip_;
-  Address ip_base_;
-  unsigned tid_;
+    Address ip_;
+    Address ip_base_;
+    unsigned tid_;
 
- public:
-  CacheThread(Address ip, unsigned tid) :
-      ip_(ip),
-      ip_base_("tcp://" + ip_ + ":"),
-      tid_(tid) {}
+public:
+    CacheThread(Address ip, unsigned tid) :
+            ip_(ip),
+            ip_base_("tcp://" + ip_ + ":"),
+            tid_(tid) {}
 
-  Address ip() const { return ip_; }
+    Address ip() const { return ip_; }
 
-  unsigned tid() const { return tid_; }
+    unsigned tid() const { return tid_; }
 
-  Address cache_get_bind_address() const { return "ipc:///requests/get"; }
+    Address cache_get_bind_address() const { return "ipc:///requests/get"; }
 
-  Address cache_get_connect_address() const { return "ipc:///requests/get"; }
+    Address cache_get_connect_address() const { return "ipc:///requests/get"; }
 
-  Address cache_put_bind_address() const { return "ipc:///requests/put"; }
+    Address cache_put_bind_address() const { return "ipc:///requests/put"; }
 
-  Address cache_put_connect_address() const { return "ipc:///requests/put"; }
+    Address cache_put_connect_address() const { return "ipc:///requests/put"; }
 
-  Address cache_update_bind_address() const {
-    return kBindBase + std::to_string(tid_ + kCacheUpdatePort);
-  }
+    Address cache_update_bind_address() const {
+        return kBindBase + std::to_string(tid_ + kCacheUpdatePort);
+    }
 
-  Address cache_update_connect_address() const {
-    return ip_base_ + std::to_string(tid_ + kCacheUpdatePort);
-  }
+    Address cache_update_connect_address() const {
+        return ip_base_ + std::to_string(tid_ + kCacheUpdatePort);
+    }
 };
 
 class UserRoutingThread {
-  Address ip_;
-  Address ip_base_;
-  unsigned tid_;
+    Address ip_;
+    Address ip_base_;
+    unsigned tid_;
 
- public:
-  UserRoutingThread() {}
+public:
+    UserRoutingThread() {}
 
-  UserRoutingThread(Address ip, unsigned tid) :
-      ip_(ip),
-      tid_(tid),
-      ip_base_("tcp://" + ip_ + ":") {}
+    UserRoutingThread(Address ip, unsigned tid) :
+            ip_(ip),
+            tid_(tid),
+            ip_base_("tcp://" + ip_ + ":") {}
 
-  Address ip() const { return ip_; }
+    Address ip() const { return ip_; }
 
-  unsigned tid() const { return tid_; }
+    unsigned tid() const { return tid_; }
 
-  Address key_address_connect_address() const {
-    return ip_base_ + std::to_string(tid_ + kKeyAddressPort);
-  }
+    Address key_address_connect_address() const {
+        return ip_base_ + std::to_string(tid_ + kKeyAddressPort);
+    }
 
-  Address key_address_bind_address() const {
-    return kBindBase + std::to_string(tid_ + kKeyAddressPort);
-  }
+    Address key_address_bind_address() const {
+        return kBindBase + std::to_string(tid_ + kKeyAddressPort);
+    }
 };
 
 class UserThread {
-  Address ip_;
-  Address ip_base_;
-  unsigned tid_;
+    Address ip_;
+    Address ip_base_;
+    unsigned tid_;
 
- public:
-  UserThread() {}
-  UserThread(Address ip, unsigned tid) :
-      ip_(ip),
-      tid_(tid),
-      ip_base_("tcp://" + ip_ + ":") {}
+public:
+    UserThread() {}
 
-  Address ip() const { return ip_; }
+    UserThread(Address ip, unsigned tid) :
+            ip_(ip),
+            tid_(tid),
+            ip_base_("tcp://" + ip_ + ":") {}
 
-  unsigned tid() const { return tid_; }
+    Address ip() const { return ip_; }
 
-  Address response_connect_address() const {
-    return ip_base_ + std::to_string(tid_ + kUserResponsePort);
-  }
+    unsigned tid() const { return tid_; }
 
-  Address response_bind_address() const {
-    return kBindBase + std::to_string(tid_ + kUserResponsePort);
-  }
+    Address response_connect_address() const {
+        return ip_base_ + std::to_string(tid_ + kUserResponsePort);
+    }
 
-  Address key_address_connect_address() const {
-    return ip_base_ + std::to_string(tid_ + kUserKeyAddressPort);
-  }
+    Address response_bind_address() const {
+        return kBindBase + std::to_string(tid_ + kUserResponsePort);
+    }
 
-  Address key_address_bind_address() const {
-    return kBindBase + std::to_string(tid_ + kUserKeyAddressPort);
-  }
+    Address key_address_connect_address() const {
+        return ip_base_ + std::to_string(tid_ + kUserKeyAddressPort);
+    }
+
+    Address key_address_bind_address() const {
+        return kBindBase + std::to_string(tid_ + kUserKeyAddressPort);
+    }
 };
 
 #endif  // INCLUDE_ANNA_THREADS_HPP_

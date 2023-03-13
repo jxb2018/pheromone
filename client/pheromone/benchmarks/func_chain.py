@@ -15,4 +15,3 @@ for i in range(num_request):
     end_t = time.time()
     time.sleep(0.1)
     all_times.append(end_t - start_t)
-

@@ -38,18 +38,21 @@
 //   // cache.At("inproc://a") is 100% equivalent to cache["inproc://a"].
 //   zmq::socket_t& another_a = cache.At("inproc://a");
 class SocketCache {
- public:
-  explicit SocketCache(zmq::context_t* context, int type) :
-      context_(context),
-      type_(type) {}
-  zmq::socket_t& At(const Address& addr);
-  zmq::socket_t& operator[](const Address& addr);
-  void clear_cache();
+public:
+    explicit SocketCache(zmq::context_t *context, int type) :
+            context_(context),
+            type_(type) {}
 
- private:
-  zmq::context_t* context_;
-  std::map<Address, zmq::socket_t> cache_;
-  int type_;
+    zmq::socket_t &At(const Address &addr);
+
+    zmq::socket_t &operator[](const Address &addr);
+
+    void clear_cache();
+
+private:
+    zmq::context_t *context_;
+    std::map<Address, zmq::socket_t> cache_;
+    int type_;
 };
 
 #endif  // SRC_INCLUDE_ZMQ_SOCKET_CACHE_HPP_

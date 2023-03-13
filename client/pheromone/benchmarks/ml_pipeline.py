@@ -2,7 +2,6 @@ from bench_common import *
 
 app_name = 'ml-pipeline'
 
-
 # redundant requests
 n = 4
 serving_funcs = [f'label_image{i + 1}' for i in range(n)]

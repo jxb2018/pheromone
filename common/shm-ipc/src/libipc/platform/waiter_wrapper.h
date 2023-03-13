@@ -8,6 +8,7 @@
 
 #include "libipc/memory/resource.h"
 #include "libipc/platform/detail.h"
+
 #if defined(WIN64) || defined(_WIN64) || defined(__WIN64__) || \
     defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) || \
     defined(WINCE) || defined(_WIN32_WCE)
@@ -65,228 +66,236 @@ public:
 #include "libipc/platform/waiter_linux.h"
 
 namespace ipc {
-namespace detail {
+    namespace detail {
 
-template <typename T>
-class object_impl {
-    ipc::shm::handle h_;
+        template<typename T>
+        class object_impl {
+            ipc::shm::handle h_;
 
-    struct info_t {
-        T object_;
-        std::atomic<unsigned> opened_;
-    };
+            struct info_t {
+                T object_;
+                std::atomic<unsigned> opened_;
+            };
 
-public:
-    static void remove(char const * name) {
-        {
-            ipc::shm::handle h { name, sizeof(info_t) };
-            if (h.valid()) {
-                auto info = static_cast<info_t*>(h.get());
-                info->object_.close();
+        public:
+            static void remove(char const *name) {
+                {
+                    ipc::shm::handle h{name, sizeof(info_t)};
+                    if (h.valid()) {
+                        auto info = static_cast<info_t *>(h.get());
+                        info->object_.close();
+                    }
+                }
+                ipc::shm::remove(name);
             }
-        }
-        ipc::shm::remove(name);
-    }
 
-    T& object() {
-        return static_cast<info_t*>(h_.get())->object_;
-    }
+            T &object() {
+                return static_cast<info_t *>(h_.get())->object_;
+            }
 
-    template <typename... P>
-    bool open(char const * name, P&&... params) {
-        if (!h_.acquire(name, sizeof(info_t))) {
-            return false;
-        }
-        auto info = static_cast<info_t*>(h_.get());
-        if ((info->opened_.fetch_add(1, std::memory_order_acq_rel) == 0) &&
-            !info->object_.open(std::forward<P>(params)...)) {
-            return false;
-        }
-        return true;
-    }
+            template<typename... P>
+            bool open(char const *name, P &&... params) {
+                if (!h_.acquire(name, sizeof(info_t))) {
+                    return false;
+                }
+                auto info = static_cast<info_t *>(h_.get());
+                if ((info->opened_.fetch_add(1, std::memory_order_acq_rel) == 0) &&
+                    !info->object_.open(std::forward<P>(params)...)) {
+                    return false;
+                }
+                return true;
+            }
 
-    void close() {
-        if (!h_.valid()) return;
-        auto info = static_cast<info_t*>(h_.get());
-        if (info->opened_.fetch_sub(1, std::memory_order_release) == 1) {
-            info->object_.close();
-        }
-        h_.release();
-    }
-};
+            void close() {
+                if (!h_.valid()) return;
+                auto info = static_cast<info_t *>(h_.get());
+                if (info->opened_.fetch_sub(1, std::memory_order_release) == 1) {
+                    info->object_.close();
+                }
+                h_.release();
+            }
+        };
 
-class mutex_impl : public object_impl<ipc::detail::mutex> {
-public:
-    bool lock  () { return object().lock  (); }
-    bool unlock() { return object().unlock(); }
-};
+        class mutex_impl : public object_impl<ipc::detail::mutex> {
+        public:
+            bool lock() { return object().lock(); }
 
-class condition_impl : public object_impl<ipc::detail::condition> {
-public:
-    bool wait(mutex_impl& mtx, std::size_t tm = invalid_value) {
-        return object().wait(mtx.object(), tm);
-    }
+            bool unlock() { return object().unlock(); }
+        };
 
-    bool notify   () { return object().notify   (); }
-    bool broadcast() { return object().broadcast(); }
-};
+        class condition_impl : public object_impl<ipc::detail::condition> {
+        public:
+            bool wait(mutex_impl &mtx, std::size_t tm = invalid_value) {
+                return object().wait(mtx.object(), tm);
+            }
 
-class semaphore_impl {
-    sem_helper::handle_t h_;
-    ipc::shm::handle     opened_; // std::atomic<unsigned>
-    ipc::string          name_;
+            bool notify() { return object().notify(); }
 
-    auto cnt() {
-        return static_cast<std::atomic<unsigned>*>(opened_.get());
-    }
+            bool broadcast() { return object().broadcast(); }
+        };
 
-public:
-    static void remove(char const * name) {
-        sem_helper::destroy((ipc::string{ "__SEMAPHORE_IMPL_SEM__" } + name).c_str());
-        ipc::shm::remove   ((ipc::string{ "__SEMAPHORE_IMPL_CNT__" } + name).c_str());
-    }
+        class semaphore_impl {
+            sem_helper::handle_t h_;
+            ipc::shm::handle opened_; // std::atomic<unsigned>
+            ipc::string name_;
 
-    bool open(char const * name, long count) {
-        name_ = name;
-        if (!opened_.acquire(("__SEMAPHORE_IMPL_CNT__" + name_).c_str(), sizeof(std::atomic<unsigned>))) {
-            return false;
-        }
-        if ((h_ = sem_helper::open(("__SEMAPHORE_IMPL_SEM__" + name_).c_str(), count)) == sem_helper::invalid()) {
-            return false;
-        }
-        cnt()->fetch_add(1, std::memory_order_acq_rel);
-        return true;
-    }
+            auto cnt() {
+                return static_cast<std::atomic<unsigned> *>(opened_.get());
+            }
 
-    void close() {
-        if (h_ == sem_helper::invalid()) return;
-        sem_helper::close(h_);
-        if (cnt() == nullptr) return;
-        if (cnt()->fetch_sub(1, std::memory_order_release) == 1) {
-            sem_helper::destroy(("__SEMAPHORE_IMPL_SEM__" + name_).c_str());
-        }
-        opened_.release();
-    }
+        public:
+            static void remove(char const *name) {
+                sem_helper::destroy((ipc::string{"__SEMAPHORE_IMPL_SEM__"} + name).c_str());
+                ipc::shm::remove((ipc::string{"__SEMAPHORE_IMPL_CNT__"} + name).c_str());
+            }
 
-    bool wait(std::size_t tm = invalid_value) {
-        return sem_helper::wait(h_, tm);
-    }
+            bool open(char const *name, long count) {
+                name_ = name;
+                if (!opened_.acquire(("__SEMAPHORE_IMPL_CNT__" + name_).c_str(), sizeof(std::atomic<unsigned>))) {
+                    return false;
+                }
+                if ((h_ = sem_helper::open(("__SEMAPHORE_IMPL_SEM__" + name_).c_str(), count)) ==
+                    sem_helper::invalid()) {
+                    return false;
+                }
+                cnt()->fetch_add(1, std::memory_order_acq_rel);
+                return true;
+            }
 
-    bool post(long count) {
-        return sem_helper::post(h_, count);
-    }
-};
+            void close() {
+                if (h_ == sem_helper::invalid()) return;
+                sem_helper::close(h_);
+                if (cnt() == nullptr) return;
+                if (cnt()->fetch_sub(1, std::memory_order_release) == 1) {
+                    sem_helper::destroy(("__SEMAPHORE_IMPL_SEM__" + name_).c_str());
+                }
+                opened_.release();
+            }
 
-} // namespace detail
+            bool wait(std::size_t tm = invalid_value) {
+                return sem_helper::wait(h_, tm);
+            }
+
+            bool post(long count) {
+                return sem_helper::post(h_, count);
+            }
+        };
+
+    } // namespace detail
 } // namespace ipc
 
 #endif/*!WIN*/
 
 namespace ipc {
-namespace detail {
+    namespace detail {
 
-class waiter_wrapper {
-public:
-    using waiter_t = detail::waiter;
+        class waiter_wrapper {
+        public:
+            using waiter_t = detail::waiter;
 
-private:
-    waiter_t* w_ = nullptr;
-    waiter_t::handle_t h_ = waiter_t::invalid();
-    waiter_helper::wait_flags flags_;
+        private:
+            waiter_t *w_ = nullptr;
+            waiter_t::handle_t h_ = waiter_t::invalid();
+            waiter_helper::wait_flags flags_;
 
-public:
-    waiter_wrapper() = default;
-    explicit waiter_wrapper(waiter_t* w) {
-        attach(w);
-    }
-    waiter_wrapper(const waiter_wrapper&) = delete;
-    waiter_wrapper& operator=(const waiter_wrapper&) = delete;
+        public:
+            waiter_wrapper() = default;
 
-    waiter_t       * waiter()       { return w_; }
-    waiter_t const * waiter() const { return w_; }
+            explicit waiter_wrapper(waiter_t *w) {
+                attach(w);
+            }
 
-    void attach(waiter_t* w) {
-        close();
-        w_ = w;
-    }
+            waiter_wrapper(const waiter_wrapper &) = delete;
 
-    bool valid() const {
-        return (w_ != nullptr) && (h_ != waiter_t::invalid());
-    }
+            waiter_wrapper &operator=(const waiter_wrapper &) = delete;
 
-    bool open(char const * name) {
-        if (w_ == nullptr) return false;
-        close();
-        flags_.is_closed_.store(false, std::memory_order_release);
-        h_ = w_->open(name);
-        return valid();
-    }
+            waiter_t *waiter() { return w_; }
 
-    void close() {
-        if (!valid()) return;
-        flags_.is_closed_.store(true, std::memory_order_release);
-        quit_waiting();
-        w_->close(h_);
-        h_ = waiter_t::invalid();
-    }
+            waiter_t const *waiter() const { return w_; }
 
-    void quit_waiting() {
-        w_->quit_waiting(h_, &flags_);
-    }
+            void attach(waiter_t *w) {
+                close();
+                w_ = w;
+            }
 
-    template <typename F>
-    bool wait_if(F && pred, std::size_t tm = invalid_value) {
-        if (!valid()) return false;
-        return w_->wait_if(h_, &flags_, std::forward<F>(pred), tm);
-    }
+            bool valid() const {
+                return (w_ != nullptr) && (h_ != waiter_t::invalid());
+            }
 
-    bool notify() {
-        if (!valid()) return false;
-        w_->notify(h_);
-        return true;
-    }
+            bool open(char const *name) {
+                if (w_ == nullptr) return false;
+                close();
+                flags_.is_closed_.store(false, std::memory_order_release);
+                h_ = w_->open(name);
+                return valid();
+            }
 
-    bool broadcast() {
-        if (!valid()) return false;
-        w_->broadcast(h_);
-        return true;
-    }
-};
+            void close() {
+                if (!valid()) return;
+                flags_.is_closed_.store(true, std::memory_order_release);
+                quit_waiting();
+                w_->close(h_);
+                h_ = waiter_t::invalid();
+            }
 
-} // namespace detail
+            void quit_waiting() {
+                w_->quit_waiting(h_, &flags_);
+            }
 
-class waiter : public detail::waiter_wrapper {
+            template<typename F>
+            bool wait_if(F &&pred, std::size_t tm = invalid_value) {
+                if (!valid()) return false;
+                return w_->wait_if(h_, &flags_, std::forward<F>(pred), tm);
+            }
 
-    shm::handle shm_;
+            bool notify() {
+                if (!valid()) return false;
+                w_->notify(h_);
+                return true;
+            }
 
-    using detail::waiter_wrapper::attach;
+            bool broadcast() {
+                if (!valid()) return false;
+                w_->broadcast(h_);
+                return true;
+            }
+        };
 
-public:
-    waiter() = default;
-    waiter(char const * name) {
-        open(name);
-    }
+    } // namespace detail
 
-    ~waiter() {
-        close();
-    }
+    class waiter : public detail::waiter_wrapper {
 
-    bool open(char const * name) {
-        if (name == nullptr || name[0] == '\0') {
-            return false;
+        shm::handle shm_;
+
+        using detail::waiter_wrapper::attach;
+
+    public:
+        waiter() = default;
+
+        waiter(char const *name) {
+            open(name);
         }
-        close();
-        if (!shm_.acquire((ipc::string{ "__SHM_WAITER__" } + name).c_str(), sizeof(waiter_t))) {
-            return false;
-        }
-        attach(static_cast<waiter_t*>(shm_.get()));
-        return detail::waiter_wrapper::open((ipc::string{ "__IMP_WAITER__" } + name).c_str());
-    }
 
-    void close() {
-        detail::waiter_wrapper::close();
-        shm_.release();
-    }
-};
+        ~waiter() {
+            close();
+        }
+
+        bool open(char const *name) {
+            if (name == nullptr || name[0] == '\0') {
+                return false;
+            }
+            close();
+            if (!shm_.acquire((ipc::string{"__SHM_WAITER__"} + name).c_str(), sizeof(waiter_t))) {
+                return false;
+            }
+            attach(static_cast<waiter_t *>(shm_.get()));
+            return detail::waiter_wrapper::open((ipc::string{"__IMP_WAITER__"} + name).c_str());
+        }
+
+        void close() {
+            detail::waiter_wrapper::close();
+            shm_.release();
+        }
+    };
 
 } // namespace ipc

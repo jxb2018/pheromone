@@ -4,5 +4,7 @@
     defined(WINCE) || defined(_WIN32_WCE)
 #include "libipc/platform/tls_pointer_win.h"
 #else /*!WIN*/
+
 #include "libipc/platform/tls_pointer_linux.h"
+
 #endif/*!WIN*/

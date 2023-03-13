@@ -1,4 +1,3 @@
-
 FUNC_CREATE_PORT = 5000
 APP_REGIST_PORT = 5020
 FUNC_CALL_PORT = 5050
@@ -12,6 +11,8 @@ TRIGGER_REQ_PORT = 12170
 """
 Connection thread
 """
+
+
 class Thread():
     def __init__(self, ip, tid):
         self.ip = ip
@@ -26,6 +27,7 @@ class Thread():
     def get_tid(self):
         return self.tid
 
+
 class OperationRequestThread(Thread):
     def bucket_req_connect_address(self):
         return self._ip_base + str(self.tid + BUCKET_REQ_PORT)
@@ -38,6 +40,7 @@ class OperationRequestThread(Thread):
 
     def trigger_req_bind_address(self):
         return self._base + str(self.tid + TRIGGER_REQ_PORT)
+
 
 class OperationThread(Thread):
     def bucket_op_connect_address(self):
@@ -52,9 +55,12 @@ class OperationThread(Thread):
     def app_regist_connect_address(self):
         return self._ip_base + str(self.tid + APP_REGIST_PORT)
 
+
 """
 zmq utils from Cloudburst
 """
+
+
 def send_request(req_obj, send_sock):
     req_string = req_obj.SerializeToString()
 
@@ -94,7 +100,7 @@ class SocketCache():
             return sock
         else:
             return self._cache[addr]
-    
+
     def send(self, addr, req_obj):
         sckt = self.get(addr)
         req_string = req_obj.SerializeToString()

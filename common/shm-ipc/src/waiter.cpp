@@ -62,16 +62,16 @@ bool semaphore::post(long count) {
 
 #include "libipc/waiter_template.inc"
 
-bool condition::wait(mutex& mtx, std::size_t tm) {
-    return impl(p_)->h_.wait(impl(mtx.p_)->h_, tm);
-}
+    bool condition::wait(mutex &mtx, std::size_t tm) {
+        return impl(p_)->h_.wait(impl(mtx.p_)->h_, tm);
+    }
 
-bool condition::notify() {
-    return impl(p_)->h_.notify();
-}
+    bool condition::notify() {
+        return impl(p_)->h_.notify();
+    }
 
-bool condition::broadcast() {
-    return impl(p_)->h_.broadcast();
-}
+    bool condition::broadcast() {
+        return impl(p_)->h_.broadcast();
+    }
 
 } // namespace ipc

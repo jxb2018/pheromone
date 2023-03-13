@@ -191,7 +191,7 @@ class AnnaTcpClient(BaseAnnaClient):
             send_request(req, send_sock)
 
         responses = recv_response(request_ids, self.response_puller,
-                                 KeyResponse)
+                                  KeyResponse)
 
         results = {}
         for response in responses:

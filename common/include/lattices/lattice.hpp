@@ -15,38 +15,40 @@
 #ifndef INCLUDE_LATTICES_LATTICE_HPP_
 #define INCLUDE_LATTICES_LATTICE_HPP_
 
-template <typename T>
+template<typename T>
 class Lattice {
- protected:
-  T element;
-  virtual void do_merge(const T &e) = 0;
+protected:
+    T element;
 
- public:
-  // Lattice<T>() { assign(bot()); }
+    virtual void do_merge(const T &e) = 0;
 
-  Lattice<T>(const T &e) { assign(e); }
+public:
+    // Lattice<T>() { assign(bot()); }
 
-  Lattice<T>(const Lattice<T> &other) { assign(other.reveal()); }
+    Lattice<T>(const T &e) { assign(e); }
 
-  virtual ~Lattice<T>() = default;
-  Lattice<T> &operator=(const Lattice<T> &rhs) {
-    assign(rhs.reveal());
-    return *this;
-  }
+    Lattice<T>(const Lattice<T> &other) { assign(other.reveal()); }
 
-  bool operator==(const Lattice<T> &rhs) const {
-    return this->reveal() == rhs.reveal();
-  }
+    virtual ~Lattice<T>() = default;
 
-  const T &reveal() const { return element; }
+    Lattice<T> &operator=(const Lattice<T> &rhs) {
+        assign(rhs.reveal());
+        return *this;
+    }
 
-  void merge(const T &e) { return do_merge(e); }
+    bool operator==(const Lattice<T> &rhs) const {
+        return this->reveal() == rhs.reveal();
+    }
 
-  void merge(const Lattice<T> &e) { return do_merge(e.reveal()); }
+    const T &reveal() const { return element; }
 
-  void assign(const T e) { element = e; }
+    void merge(const T &e) { return do_merge(e); }
 
-  void assign(const Lattice<T> &e) { element = e.reveal(); }
+    void merge(const Lattice<T> &e) { return do_merge(e.reveal()); }
+
+    void assign(const T e) { element = e; }
+
+    void assign(const Lattice<T> &e) { element = e.reveal(); }
 };
 
 #endif  // INCLUDE_LATTICES_LATTICE_HPP_

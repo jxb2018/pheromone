@@ -4,7 +4,7 @@ cd $PHERO_HOME/
 rm -rf conf
 mkdir -p conf
 
-IP=`ifconfig eth0 | grep 'inet' | grep -v inet6 | sed -e 's/^[ \t]*//' | cut -d' ' -f2`
+IP=$(ifconfig eth0 | grep 'inet' | grep -v inet6 | sed -e 's/^[ \t]*//' | cut -d' ' -f2)
 
 cd build && make -j4 && cd ..
 touch conf/config.yml
@@ -20,11 +20,10 @@ echo -e "req: $REQ_NUM" | tee -a conf/config.yml
 # echo -e "sleep: $SLEEP" | tee -a conf/config.yml
 
 if [[ -n "$CLIENT_NUM" ]]; then
-    for i in in $(seq 1 $CLIENT_NUM); do
-        ./build/target/client &
-    done
-    wait
+  for i in in $(seq 1 $CLIENT_NUM); do
+    ./build/target/client &
+  done
+  wait
 else
-    ./build/target/client
+  ./build/target/client
 fi
-

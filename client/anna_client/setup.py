@@ -20,7 +20,7 @@ from setuptools.command.install import install
 class InstallWrapper(install):
     def run(self):
         # compile the relevant protobufs
-        #self.compile_proto()
+        # self.compile_proto()
 
         # Run the standard PyPi copy
         install.run(self)
@@ -33,18 +33,18 @@ class InstallWrapper(install):
         os.system('bash compile.sh')
 
     def cleanup(self):
-        #os.system('rm anna/anna_pb2.py')
-        #os.system('rm anna/shared_pb2.py')
+        # os.system('rm anna/anna_pb2.py')
+        # os.system('rm anna/shared_pb2.py')
         os.system('rm -rf build')
         os.system('rm -rf Anna.egg-info')
 
 
 setup(
-        name='Anna',
-        version='0.1',
-        packages=['anna', ],
-        license='Apache v2',
-        long_description='Client for the Anna KVS',
-        install_requires=['zmq', 'protobuf'],
-        cmdclass={'install': InstallWrapper}
+    name='Anna',
+    version='0.1',
+    packages=['anna', ],
+    license='Apache v2',
+    long_description='Client for the Anna KVS',
+    install_requires=['zmq', 'protobuf'],
+    cmdclass={'install': InstallWrapper}
 )

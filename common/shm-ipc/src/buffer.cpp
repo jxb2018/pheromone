@@ -5,83 +5,83 @@
 
 namespace ipc {
 
-bool operator==(buffer const & b1, buffer const & b2) {
-    return (b1.size() == b2.size()) && (std::memcmp(b1.data(), b2.data(), b1.size()) == 0);
-}
-
-bool operator!=(buffer const & b1, buffer const & b2) {
-    return !(b1 == b2);
-}
-
-class buffer::buffer_ : public pimpl<buffer_> {
-public:
-    void*       p_;
-    std::size_t s_;
-    void*       a_;
-    buffer::destructor_t d_;
-
-    buffer_(void* p, std::size_t s, buffer::destructor_t d, void* a)
-        : p_(p), s_(s), a_(a), d_(d) {
+    bool operator==(buffer const &b1, buffer const &b2) {
+        return (b1.size() == b2.size()) && (std::memcmp(b1.data(), b2.data(), b1.size()) == 0);
     }
 
-    ~buffer_() {
-        if (d_ == nullptr) return;
-        d_((a_ == nullptr) ? p_ : a_, s_);
+    bool operator!=(buffer const &b1, buffer const &b2) {
+        return !(b1 == b2);
     }
-};
 
-buffer::buffer()
-    : buffer(nullptr, 0, nullptr, nullptr) {
-}
+    class buffer::buffer_ : public pimpl<buffer_> {
+    public:
+        void *p_;
+        std::size_t s_;
+        void *a_;
+        buffer::destructor_t d_;
 
-buffer::buffer(void* p, std::size_t s, destructor_t d)
-    : p_(p_->make(p, s, d, nullptr)) {
-}
+        buffer_(void *p, std::size_t s, buffer::destructor_t d, void *a)
+                : p_(p), s_(s), a_(a), d_(d) {
+        }
 
-buffer::buffer(void* p, std::size_t s, destructor_t d, void* additional)
-    : p_(p_->make(p, s, d, additional)) {
-}
+        ~buffer_() {
+            if (d_ == nullptr) return;
+            d_((a_ == nullptr) ? p_ : a_, s_);
+        }
+    };
 
-buffer::buffer(void* p, std::size_t s)
-    : buffer(p, s, nullptr) {
-}
+    buffer::buffer()
+            : buffer(nullptr, 0, nullptr, nullptr) {
+    }
 
-buffer::buffer(char const & c)
-    : buffer(const_cast<char*>(&c), 1) {
-}
+    buffer::buffer(void *p, std::size_t s, destructor_t d)
+            : p_(p_->make(p, s, d, nullptr)) {
+    }
 
-buffer::buffer(buffer&& rhs)
-    : buffer() {
-    swap(rhs);
-}
+    buffer::buffer(void *p, std::size_t s, destructor_t d, void *additional)
+            : p_(p_->make(p, s, d, additional)) {
+    }
 
-buffer::~buffer() {
-    p_->clear();
-}
+    buffer::buffer(void *p, std::size_t s)
+            : buffer(p, s, nullptr) {
+    }
 
-void buffer::swap(buffer& rhs) {
-    std::swap(p_, rhs.p_);
-}
+    buffer::buffer(char const &c)
+            : buffer(const_cast<char *>(&c), 1) {
+    }
 
-buffer& buffer::operator=(buffer rhs) {
-    swap(rhs);
-    return *this;
-}
+    buffer::buffer(buffer &&rhs)
+            : buffer() {
+        swap(rhs);
+    }
 
-bool buffer::empty() const noexcept {
-    return (impl(p_)->p_ == nullptr) || (impl(p_)->s_ == 0);
-}
+    buffer::~buffer() {
+        p_->clear();
+    }
 
-void* buffer::data() noexcept {
-    return impl(p_)->p_;
-}
+    void buffer::swap(buffer &rhs) {
+        std::swap(p_, rhs.p_);
+    }
 
-void const * buffer::data() const noexcept {
-    return impl(p_)->p_;
-}
+    buffer &buffer::operator=(buffer rhs) {
+        swap(rhs);
+        return *this;
+    }
 
-std::size_t buffer::size() const noexcept {
-    return impl(p_)->s_;
-}
+    bool buffer::empty() const noexcept {
+        return (impl(p_)->p_ == nullptr) || (impl(p_)->s_ == 0);
+    }
+
+    void *buffer::data() noexcept {
+        return impl(p_)->p_;
+    }
+
+    void const *buffer::data() const noexcept {
+        return impl(p_)->p_;
+    }
+
+    std::size_t buffer::size() const noexcept {
+        return impl(p_)->s_;
+    }
 
 } // namespace ipc
