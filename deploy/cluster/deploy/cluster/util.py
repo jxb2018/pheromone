@@ -15,12 +15,10 @@
 import os
 import subprocess
 import sys
-import tarfile
-from tempfile import TemporaryFile
-import yaml
 
 import kubernetes as k8s
-from kubernetes.stream import stream
+
+import yaml
 
 NAMESPACE = 'default'
 
@@ -93,7 +91,7 @@ def get_pod_ips(client, selector, is_running=False):
 
         if is_running:
             pod_statuses = list(filter(
-                  lambda pod: pod.status.phase != 'Running', pod_list))
+                lambda pod: pod.status.phase != 'Running', pod_list))
             running = len(pod_statuses) == 0
         else:
             running = True

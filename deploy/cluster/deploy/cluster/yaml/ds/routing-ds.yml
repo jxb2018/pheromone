@@ -16,7 +16,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: routing-nodes
-  labels: 
+  labels:
     role: routing
 spec:
   selector:
@@ -31,14 +31,14 @@ spec:
         role: routing
       hostNetwork: true
       containers:
-      - name: routing-container
-        image: hydroproject/anna
-        env: 
-        - name: SERVER_TYPE
-          value: r
-        - name: MON_IPS
-          value: MON_IPS_DUMMY
-        - name: REPO_ORG
-          value: hydro-project
-        - name: REPO_BRANCH
-          value: master
+        - name: routing-container
+          image: hydroproject/anna
+          env:
+            - name: SERVER_TYPE
+              value: r
+            - name: MON_IPS
+              value: MON_IPS_DUMMY
+            - name: REPO_ORG
+              value: hydro-project
+            - name: REPO_BRANCH
+              value: master

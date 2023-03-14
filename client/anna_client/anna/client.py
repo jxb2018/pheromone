@@ -16,7 +16,6 @@ import random
 import socket
 
 import zmq
-
 from anna.anna_pb2 import (
     GET, PUT,  # Anna's request types
     NO_ERROR,  # Anna's error modes

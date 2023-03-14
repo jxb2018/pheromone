@@ -5,9 +5,9 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-  - port: 6002
-    targetPort: 6002
-    name: coord-query
+    - port: 6002
+      targetPort: 6002
+      name: coord-query
   # - port: 5002
   #   targetPort: 5002
   #   name: func-call

@@ -9,162 +9,172 @@
 
 namespace ipc {
 
-using handle_t = void*;
-using buff_t   = buffer;
+    using handle_t = void *;
+    using buff_t = buffer;
 
-enum : unsigned {
-    sender,
-    receiver
-};
+    enum : unsigned {
+        sender,
+        receiver
+    };
 
-template <typename Flag>
-struct IPC_EXPORT chan_impl {
-    static bool connect   (ipc::handle_t * ph, char const * name, unsigned mode);
-    static bool reconnect (ipc::handle_t * ph, unsigned mode);
-    static void disconnect(ipc::handle_t h);
-    static void destroy   (ipc::handle_t h);
+    template<typename Flag>
+    struct IPC_EXPORT chan_impl {
+        static bool connect(ipc::handle_t *ph, char const *name, unsigned mode);
 
-    static char const * name(ipc::handle_t h);
+        static bool reconnect(ipc::handle_t *ph, unsigned mode);
 
-    static std::size_t recv_count(ipc::handle_t h);
-    static bool wait_for_recv(ipc::handle_t h, std::size_t r_count, std::size_t tm);
+        static void disconnect(ipc::handle_t h);
 
-    static bool   send(ipc::handle_t h, void const * data, std::size_t size, std::size_t tm);
-    static buff_t recv(ipc::handle_t h, std::size_t tm);
+        static void destroy(ipc::handle_t h);
 
-    static bool   try_send(ipc::handle_t h, void const * data, std::size_t size, std::size_t tm);
-    static buff_t try_recv(ipc::handle_t h);
-};
+        static char const *name(ipc::handle_t h);
 
-template <typename Flag>
-class chan_wrapper {
-private:
-    using detail_t = chan_impl<Flag>;
+        static std::size_t recv_count(ipc::handle_t h);
 
-    ipc::handle_t h_ = nullptr;
-    unsigned mode_   = ipc::sender;
-    bool connected_  = false;
+        static bool wait_for_recv(ipc::handle_t h, std::size_t r_count, std::size_t tm);
 
-public:
-    chan_wrapper() noexcept = default;
+        static bool send(ipc::handle_t h, void const *data, std::size_t size, std::size_t tm);
 
-    explicit chan_wrapper(char const * name, unsigned mode = ipc::sender)
-        : connected_{this->connect(name, mode)} {
-    }
+        static buff_t recv(ipc::handle_t h, std::size_t tm);
 
-    chan_wrapper(chan_wrapper&& rhs) noexcept
-        : chan_wrapper{} {
-        swap(rhs);
-    }
+        static bool try_send(ipc::handle_t h, void const *data, std::size_t size, std::size_t tm);
 
-    ~chan_wrapper() {
-        detail_t::destroy(h_);
-    }
+        static buff_t try_recv(ipc::handle_t h);
+    };
 
-    void swap(chan_wrapper& rhs) noexcept {
-        std::swap(h_        , rhs.h_);
-        std::swap(mode_     , rhs.mode_);
-        std::swap(connected_, rhs.connected_);
-    }
+    template<typename Flag>
+    class chan_wrapper {
+    private:
+        using detail_t = chan_impl<Flag>;
 
-    chan_wrapper& operator=(chan_wrapper rhs) noexcept {
-        swap(rhs);
-        return *this;
-    }
+        ipc::handle_t h_ = nullptr;
+        unsigned mode_ = ipc::sender;
+        bool connected_ = false;
 
-    char const * name() const noexcept {
-        return detail_t::name(h_);
-    }
+    public:
+        chan_wrapper() noexcept = default;
 
-    ipc::handle_t handle() const noexcept {
-        return h_;
-    }
+        explicit chan_wrapper(char const *name, unsigned mode = ipc::sender)
+                : connected_{this->connect(name, mode)} {
+        }
 
-    bool valid() const noexcept {
-        return (handle() != nullptr);
-    }
+        chan_wrapper(chan_wrapper &&rhs) noexcept
+                : chan_wrapper{} {
+            swap(rhs);
+        }
 
-    unsigned mode() const noexcept {
-        return mode_;
-    }
+        ~chan_wrapper() {
+            detail_t::destroy(h_);
+        }
 
-    chan_wrapper clone() const {
-        return chan_wrapper { name(), mode_ };
-    }
+        void swap(chan_wrapper &rhs) noexcept {
+            std::swap(h_, rhs.h_);
+            std::swap(mode_, rhs.mode_);
+            std::swap(connected_, rhs.connected_);
+        }
 
-    /**
-     * Building handle, then try connecting with name & mode flags.
-    */
-    bool connect(char const * name, unsigned mode = ipc::sender | ipc::receiver) {
-        if (name == nullptr || name[0] == '\0') return false;
-        detail_t::disconnect(h_); // clear old connection
-        return connected_ = detail_t::connect(&h_, name, mode_ = mode);
-    }
+        chan_wrapper &operator=(chan_wrapper rhs) noexcept {
+            swap(rhs);
+            return *this;
+        }
 
-    /**
-     * Try connecting with new mode flags.
-    */
-    bool reconnect(unsigned mode) {
-        if (!valid()) return false;
-        if (connected_ && (mode_ == mode)) return true;
-        return connected_ = detail_t::reconnect(&h_, mode_ = mode);
-    }
+        char const *name() const noexcept {
+            return detail_t::name(h_);
+        }
 
-    void disconnect() {
-        if (!valid()) return;
-        detail_t::disconnect(h_);
-        connected_ = false;
-    }
+        ipc::handle_t handle() const noexcept {
+            return h_;
+        }
 
-    std::size_t recv_count() const {
-        return detail_t::recv_count(h_);
-    }
+        bool valid() const noexcept {
+            return (handle() != nullptr);
+        }
 
-    bool wait_for_recv(std::size_t r_count, std::size_t tm = invalid_value) const {
-        return detail_t::wait_for_recv(h_, r_count, tm);
-    }
+        unsigned mode() const noexcept {
+            return mode_;
+        }
 
-    static bool wait_for_recv(char const * name, std::size_t r_count, std::size_t tm = invalid_value) {
-        return chan_wrapper(name).wait_for_recv(r_count, tm);
-    }
+        chan_wrapper clone() const {
+            return chan_wrapper{name(), mode_};
+        }
 
-    /**
-     * If timeout, this function would call 'force_push' to send the data forcibly.
-    */
-    bool send(void const * data, std::size_t size, std::size_t tm = default_timeout) {
-        return detail_t::send(h_, data, size, tm);
-    }
-    bool send(buff_t const & buff, std::size_t tm = default_timeout) {
-        return this->send(buff.data(), buff.size(), tm);
-    }
-    bool send(std::string const & str, std::size_t tm = default_timeout) {
-        return this->send(str.c_str(), str.size() + 1, tm);
-    }
+        /**
+         * Building handle, then try connecting with name & mode flags.
+        */
+        bool connect(char const *name, unsigned mode = ipc::sender | ipc::receiver) {
+            if (name == nullptr || name[0] == '\0') return false;
+            detail_t::disconnect(h_); // clear old connection
+            return connected_ = detail_t::connect(&h_, name, mode_ = mode);
+        }
 
-    /**
-     * If timeout, this function would just return false.
-    */
-    bool try_send(void const * data, std::size_t size, std::size_t tm = default_timeout) {
-        return detail_t::try_send(h_, data, size, tm);
-    }
-    bool try_send(buff_t const & buff, std::size_t tm = default_timeout) {
-        return this->try_send(buff.data(), buff.size(), tm);
-    }
-    bool try_send(std::string const & str, std::size_t tm = default_timeout) {
-        return this->try_send(str.c_str(), str.size() + 1, tm);
-    }
+        /**
+         * Try connecting with new mode flags.
+        */
+        bool reconnect(unsigned mode) {
+            if (!valid()) return false;
+            if (connected_ && (mode_ == mode)) return true;
+            return connected_ = detail_t::reconnect(&h_, mode_ = mode);
+        }
 
-    buff_t recv(std::size_t tm = invalid_value) {
-        return detail_t::recv(h_, tm);
-    }
+        void disconnect() {
+            if (!valid()) return;
+            detail_t::disconnect(h_);
+            connected_ = false;
+        }
 
-    buff_t try_recv() {
-        return detail_t::try_recv(h_);
-    }
-};
+        std::size_t recv_count() const {
+            return detail_t::recv_count(h_);
+        }
 
-template <relat Rp, relat Rc, trans Ts>
-using chan = chan_wrapper<ipc::wr<Rp, Rc, Ts>>;
+        bool wait_for_recv(std::size_t r_count, std::size_t tm = invalid_value) const {
+            return detail_t::wait_for_recv(h_, r_count, tm);
+        }
+
+        static bool wait_for_recv(char const *name, std::size_t r_count, std::size_t tm = invalid_value) {
+            return chan_wrapper(name).wait_for_recv(r_count, tm);
+        }
+
+        /**
+         * If timeout, this function would call 'force_push' to send the data forcibly.
+        */
+        bool send(void const *data, std::size_t size, std::size_t tm = default_timeout) {
+            return detail_t::send(h_, data, size, tm);
+        }
+
+        bool send(buff_t const &buff, std::size_t tm = default_timeout) {
+            return this->send(buff.data(), buff.size(), tm);
+        }
+
+        bool send(std::string const &str, std::size_t tm = default_timeout) {
+            return this->send(str.c_str(), str.size() + 1, tm);
+        }
+
+        /**
+         * If timeout, this function would just return false.
+        */
+        bool try_send(void const *data, std::size_t size, std::size_t tm = default_timeout) {
+            return detail_t::try_send(h_, data, size, tm);
+        }
+
+        bool try_send(buff_t const &buff, std::size_t tm = default_timeout) {
+            return this->try_send(buff.data(), buff.size(), tm);
+        }
+
+        bool try_send(std::string const &str, std::size_t tm = default_timeout) {
+            return this->try_send(str.c_str(), str.size() + 1, tm);
+        }
+
+        buff_t recv(std::size_t tm = invalid_value) {
+            return detail_t::recv(h_, tm);
+        }
+
+        buff_t try_recv() {
+            return detail_t::try_recv(h_);
+        }
+    };
+
+    template<relat Rp, relat Rc, trans Ts>
+    using chan = chan_wrapper<ipc::wr<Rp, Rc, Ts>>;
 
 /**
  * class route
@@ -177,7 +187,7 @@ using chan = chan_wrapper<ipc::wr<Rp, Rc, Ts>>;
  * (one producer/writer to multi consumers/readers)
 */
 
-using route = chan<relat::single, relat::multi, trans::broadcast>;
+    using route = chan<relat::single, relat::multi, trans::broadcast>;
 
 /**
  * class channel
@@ -187,6 +197,6 @@ using route = chan<relat::single, relat::multi, trans::broadcast>;
  * would receive your sent messages.
 */
 
-using channel = chan<relat::multi, relat::multi, trans::broadcast>;
+    using channel = chan<relat::multi, relat::multi, trans::broadcast>;
 
 } // namespace ipc

@@ -213,7 +213,7 @@ INSTANTIATE_TYPED_TEST_SUITE_P(My, FooTest, MyTypes);
               CaseName)>::Register("",                                        \
                                    ::testing::internal::CodeLocation(         \
                                        __FILE__, __LINE__),                   \
-                                   #CaseName, #TestName, 0,                   \
+#CaseName, #TestName, 0,                   \
                                    ::testing::internal::GenerateNames<        \
                                        GTEST_NAME_GENERATOR_(CaseName),       \
                                        GTEST_TYPE_PARAMS_(CaseName)>());      \

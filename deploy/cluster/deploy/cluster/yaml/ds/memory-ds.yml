@@ -16,7 +16,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: memory-nodes
-  labels: 
+  labels:
     role: memory
 spec:
   selector:
@@ -31,21 +31,21 @@ spec:
         role: memory
       hostNetwork: true
       containers:
-      - name: memory-container
-        image: hydroproject/anna
-        imagePullPolicy: Always
-        env: 
-        - name: SERVER_TYPE
-          value: "memory"
-        - name: ROUTING_IPS
-          value: ROUTING_IPS_DUMMY
-        - name: MGMT_IP
-          value: "\"NULL\""
-        - name: SEED_IP
-          value: SEED_IP_DUMMY
-        - name: MON_IPS
-          value: MON_IPS_DUMMY
-        - name: REPO_ORG
-          value: hydro-project
-        - name: REPO_BRANCH
-          value: master
+        - name: memory-container
+          image: hydroproject/anna
+          imagePullPolicy: Always
+          env:
+            - name: SERVER_TYPE
+              value: "memory"
+            - name: ROUTING_IPS
+              value: ROUTING_IPS_DUMMY
+            - name: MGMT_IP
+              value: "\"NULL\""
+            - name: SEED_IP
+              value: SEED_IP_DUMMY
+            - name: MON_IPS
+              value: MON_IPS_DUMMY
+            - name: REPO_ORG
+              value: hydro-project
+            - name: REPO_BRANCH
+              value: master

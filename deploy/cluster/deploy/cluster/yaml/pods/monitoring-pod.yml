@@ -16,20 +16,20 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: monitoring-pod
-  labels: 
+  labels:
     role: monitoring
 spec:
   containers:
-  - name: monitoring-container
-    image: hydroproject/anna
-    env: 
-    - name: SERVER_TYPE
-      value: mn
-    - name: MGMT_IP
-      value: MGMT_IP_DUMMY
-    - name: REPO_ORG
-      value: hydro-project
-    - name: REPO_BRANCH
-      value: master
+    - name: monitoring-container
+      image: hydroproject/anna
+      env:
+        - name: SERVER_TYPE
+          value: mn
+        - name: MGMT_IP
+          value: MGMT_IP_DUMMY
+        - name: REPO_ORG
+          value: hydro-project
+        - name: REPO_BRANCH
+          value: master
   nodeSelector:
     role: general

@@ -1,5 +1,4 @@
 import argparse
-import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--num', type=int, help="function number")

@@ -14,14 +14,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import random
 import os
+import random
 
 import boto3
 
 from deploy.cluster import util
 
 ec2_client = boto3.client('ec2', os.getenv('AWS_REGION', 'us-east-1'))
+
 
 # Generate list of all recently created pods.
 def get_current_pod_container_pairs(pods):
@@ -33,6 +34,7 @@ def get_current_pod_container_pairs(pods):
             pod_container_pairs.add((pname, cname))
     return pod_container_pairs
 
+
 def add_nodes(client, apps_client, cfile, kinds, counts, create=False,
               prefix=None):
     previously_created_pods_list = []
@@ -43,7 +45,7 @@ def add_nodes(client, apps_client, cfile, kinds, counts, create=False,
 
         pods = client.list_namespaced_pod(namespace=util.NAMESPACE,
                                           label_selector='role=' +
-                                          kinds[i]).items
+                                                         kinds[i]).items
 
         previously_created_pods_list.append(get_current_pod_container_pairs(pods))
 
@@ -103,11 +105,11 @@ def add_nodes(client, apps_client, cfile, kinds, counts, create=False,
         # Wait until all pods of this kind are running
         res = []
         while len(res) != expected_counts[i]:
-            res = util.get_pod_ips(client, 'role='+kind, is_running=True)
+            res = util.get_pod_ips(client, 'role=' + kind, is_running=True)
 
         pods = client.list_namespaced_pod(namespace=util.NAMESPACE,
                                           label_selector='role=' +
-                                          kind).items
+                                                         kind).items
 
         created_pods = get_current_pod_container_pairs(pods)
 
@@ -127,30 +129,31 @@ def add_nodes(client, apps_client, cfile, kinds, counts, create=False,
 
         os.system('rm ./anna-config.yml')
 
+
 def batch_add_nodes(client, apps_client, cfile, node_types, node_counts, batch_size, prefix):
-  if sum(node_counts) <= batch_size:
-    add_nodes(client, apps_client, cfile, node_types, node_counts, True,
-              prefix)
-  else:
-    for i in range(len(node_types)):
-        if node_counts[i] <= batch_size:
-            batch_add_nodes(client, apps_client, cfile, [node_types[i]], [node_counts[i]], batch_size, prefix)
-        else:
-            batch_count = 1
-            print('Batch %d: adding %d nodes...' % (batch_count, batch_size))
-            add_nodes(client, apps_client, cfile, [node_types[i]], [batch_size], True,
-                      prefix)
-            remaining_count = node_counts[i] - batch_size
-            batch_count += 1
-            while remaining_count > 0:
-              if remaining_count <= batch_size:
-                print('Batch %d: adding %d nodes...' % (batch_count, remaining_count))
-                add_nodes(client, apps_client, cfile, [node_types[i]], [remaining_count], False,
-                          prefix)
-                remaining_count = 0
-              else:
+    if sum(node_counts) <= batch_size:
+        add_nodes(client, apps_client, cfile, node_types, node_counts, True,
+                  prefix)
+    else:
+        for i in range(len(node_types)):
+            if node_counts[i] <= batch_size:
+                batch_add_nodes(client, apps_client, cfile, [node_types[i]], [node_counts[i]], batch_size, prefix)
+            else:
+                batch_count = 1
                 print('Batch %d: adding %d nodes...' % (batch_count, batch_size))
-                add_nodes(client, apps_client, cfile, [node_types[i]], [batch_size], False,
+                add_nodes(client, apps_client, cfile, [node_types[i]], [batch_size], True,
                           prefix)
-                remaining_count = remaining_count - batch_size
-              batch_count += 1
+                remaining_count = node_counts[i] - batch_size
+                batch_count += 1
+                while remaining_count > 0:
+                    if remaining_count <= batch_size:
+                        print('Batch %d: adding %d nodes...' % (batch_count, remaining_count))
+                        add_nodes(client, apps_client, cfile, [node_types[i]], [remaining_count], False,
+                                  prefix)
+                        remaining_count = 0
+                    else:
+                        print('Batch %d: adding %d nodes...' % (batch_count, batch_size))
+                        add_nodes(client, apps_client, cfile, [node_types[i]], [batch_size], False,
+                                  prefix)
+                        remaining_count = remaining_count - batch_size
+                    batch_count += 1

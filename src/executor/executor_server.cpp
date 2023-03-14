@@ -48,7 +48,8 @@ bool load_function(logger log, string &func_name, map<string, CppFunction> &name
     auto func_load_elasped = std::chrono::duration_cast<std::chrono::microseconds>(func_load_t - lib_load_t).count();
 //    log->info("Loaded function {}. lib_load_elasped: {}, func_load_elasped: {}", func_name, lib_load_elasped,
 //              func_load_elasped);
-    std::cout << "Loaded function " << func_name << ". lib_load_elasped: " << lib_load_elasped << ", func_load_elasped: " << func_load_elasped << std::endl;
+    std::cout << "Loaded function " << func_name << ". lib_load_elasped: " << lib_load_elasped
+              << ", func_load_elasped: " << func_load_elasped << std::endl;
     return true;
 }
 

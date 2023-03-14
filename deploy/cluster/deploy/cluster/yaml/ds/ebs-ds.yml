@@ -16,7 +16,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: ebs-nodes
-  labels: 
+  labels:
     role: ebs
 spec:
   selector:
@@ -33,44 +33,44 @@ spec:
       containers:
         - name: ebs-container
           image: hydroproject/anna
-          env: 
-          - name: SERVER_TYPE
-            value: "ebs"
-          - name: ROUTING_IPS
-            value: ROUTING_IPS_DUMMY
-          - name: SEED_IP
-            value: SEED_IP_DUMMY
-          - name: MGMT_IP
-            value: MGMT_IP_DUMMY
-          - name: MON_IPS
-            value: MON_IPS_DUMMY
-          - name: REPO_ORG
-            value: hydro-project
-          - name: REPO_BRANCH
-            value: master
+          env:
+            - name: SERVER_TYPE
+              value: "ebs"
+            - name: ROUTING_IPS
+              value: ROUTING_IPS_DUMMY
+            - name: SEED_IP
+              value: SEED_IP_DUMMY
+            - name: MGMT_IP
+              value: MGMT_IP_DUMMY
+            - name: MON_IPS
+              value: MON_IPS_DUMMY
+            - name: REPO_ORG
+              value: hydro-project
+            - name: REPO_BRANCH
+              value: master
           volumeMounts:
-          - mountPath: /ebs/ebs_0
-            name: ebs0
-          - mountPath: /ebs/ebs_1
-            name: ebs1
-          - mountPath: /ebs/ebs_2
-            name: ebs2
-          - mountPath: /ebs/ebs_3
-            name: ebs3
+            - mountPath: /ebs/ebs_0
+              name: ebs0
+            - mountPath: /ebs/ebs_1
+              name: ebs1
+            - mountPath: /ebs/ebs_2
+              name: ebs2
+            - mountPath: /ebs/ebs_3
+              name: ebs3
       volumes:
-      - name: ebs0
-        hostPath:
-          path: /ebs/ebs_0
-          type: Directory
-      - name: ebs1
-        hostPath:
-          path: /ebs/ebs_1
-          type: Directory
-      - name: ebs2
-        hostPath:
-          path: /ebs/ebs_2
-          type: Directory
-      - name: ebs3
-        hostPath:
-          path: /ebs/ebs_3
-          type: Directory
+        - name: ebs0
+          hostPath:
+            path: /ebs/ebs_0
+            type: Directory
+        - name: ebs1
+          hostPath:
+            path: /ebs/ebs_1
+            type: Directory
+        - name: ebs2
+          hostPath:
+            path: /ebs/ebs_2
+            type: Directory
+        - name: ebs3
+          hostPath:
+            path: /ebs/ebs_3
+            type: Directory

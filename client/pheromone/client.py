@@ -1,16 +1,16 @@
 import logging
-import os
-import zmq
 import socket
-from utils import *
-from proto.operation_pb2 import *
-from proto.common_pb2 import *
-import numpy as np
 import time
+
+import zmq
 from anna.client import AnnaTcpClient
 from anna.lattices import (
     LWWPairLattice
 )
+from proto.common_pb2 import *
+from proto.operation_pb2 import *
+
+from utils import *
 
 
 def generate_timestamp(tid=1):

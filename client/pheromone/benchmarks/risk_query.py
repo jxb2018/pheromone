@@ -1,5 +1,6 @@
-from bench_common import *
 import random
+
+from bench_common import *
 
 app_name = 'risk-query'
 

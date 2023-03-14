@@ -58,38 +58,35 @@
 
 namespace ipc {
 
-template <typename K>
-inline void yield(K& k) noexcept {
-    if (k < 4)  { /* Do nothing */ }
-    else
-    if (k < 16) { IPC_LOCK_PAUSE_(); }
-    else
-    if (k < 32) { std::this_thread::yield(); }
-    else {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        return;
+    template<typename K>
+    inline void yield(K &k) noexcept {
+        if (k < 4) { /* Do nothing */ }
+        else if (k < 16) { IPC_LOCK_PAUSE_(); }
+        else if (k < 32) { std::this_thread::yield(); }
+        else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            return;
+        }
+        ++k;
     }
-    ++k;
-}
 
-template <std::size_t N = 4096, typename K, typename F>
-inline void sleep(K& k, F&& f) {
-    if (k < static_cast<K>(N)) {
-        std::this_thread::yield();
+    template<std::size_t N = 4096, typename K, typename F>
+    inline void sleep(K &k, F &&f) {
+        if (k < static_cast<K>(N)) {
+            std::this_thread::yield();
+        } else {
+            static_cast<void>(std::forward<F>(f)());
+            return;
+        }
+        ++k;
     }
-    else {
-        static_cast<void>(std::forward<F>(f)());
-        return;
-    }
-    ++k;
-}
 
-template <std::size_t N = 4096, typename K>
-inline void sleep(K& k) {
-    sleep<N>(k, [] {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    });
-}
+    template<std::size_t N = 4096, typename K>
+    inline void sleep(K &k) {
+        sleep<N>(k, [] {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        });
+    }
 
 } // namespace ipc
 
@@ -97,75 +94,78 @@ inline void sleep(K& k) {
 
 namespace ipc {
 
-class spin_lock {
-    std::atomic<unsigned> lc_ { 0 };
+    class spin_lock {
+        std::atomic<unsigned> lc_{0};
 
-public:
-    void lock(void) noexcept {
-        for (unsigned k = 0;
-             lc_.exchange(1, std::memory_order_acquire);
-             yield(k)) ;
-    }
+    public:
+        void lock(void) noexcept {
+            for (unsigned k = 0;
+                 lc_.exchange(1, std::memory_order_acquire);
+                 yield(k));
+        }
 
-    void unlock(void) noexcept {
-        lc_.store(0, std::memory_order_release);
-    }
-};
-
-class rw_lock {
-    using lc_ui_t = unsigned;
-
-    std::atomic<lc_ui_t> lc_ { 0 };
-
-    enum : lc_ui_t {
-        w_mask = (std::numeric_limits<std::make_signed_t<lc_ui_t>>::max)(), // b 0111 1111
-        w_flag = w_mask + 1                                                 // b 1000 0000
+        void unlock(void) noexcept {
+            lc_.store(0, std::memory_order_release);
+        }
     };
 
-public:
-    rw_lock() = default;
+    class rw_lock {
+        using lc_ui_t = unsigned;
 
-    rw_lock(const rw_lock&) = delete;
-    rw_lock& operator=(const rw_lock&) = delete;
-    rw_lock(rw_lock&&) = delete;
-    rw_lock& operator=(rw_lock&&) = delete;
+        std::atomic<lc_ui_t> lc_{0};
 
-    void lock() noexcept {
-        for (unsigned k = 0;;) {
-            auto old = lc_.fetch_or(w_flag, std::memory_order_acq_rel);
-            if (!old) return;           // got w-lock
-            if (!(old & w_flag)) break; // other thread having r-lock
-            yield(k);                   // other thread having w-lock
-        }
-        // wait for reading finished
-        for (unsigned k = 0;
-             lc_.load(std::memory_order_acquire) & w_mask;
-             yield(k)) ;
-    }
+        enum : lc_ui_t {
+            w_mask = (std::numeric_limits<std::make_signed_t<lc_ui_t>>::max)(), // b 0111 1111
+            w_flag = w_mask + 1                                                 // b 1000 0000
+        };
 
-    void unlock() noexcept {
-        lc_.store(0, std::memory_order_release);
-    }
+    public:
+        rw_lock() = default;
 
-    void lock_shared() noexcept {
-        auto old = lc_.load(std::memory_order_acquire);
-        for (unsigned k = 0;;) {
-            // if w_flag set, just continue
-            if (old & w_flag) {
-                yield(k);
-                old = lc_.load(std::memory_order_acquire);
+        rw_lock(const rw_lock &) = delete;
+
+        rw_lock &operator=(const rw_lock &) = delete;
+
+        rw_lock(rw_lock &&) = delete;
+
+        rw_lock &operator=(rw_lock &&) = delete;
+
+        void lock() noexcept {
+            for (unsigned k = 0;;) {
+                auto old = lc_.fetch_or(w_flag, std::memory_order_acq_rel);
+                if (!old) return;           // got w-lock
+                if (!(old & w_flag)) break; // other thread having r-lock
+                yield(k);                   // other thread having w-lock
             }
-            // otherwise try cas lc + 1 (set r-lock)
-            else if (lc_.compare_exchange_weak(old, old + 1, std::memory_order_release)) {
-                return;
-            }
-            // set r-lock failed, old has been updated
+            // wait for reading finished
+            for (unsigned k = 0;
+                 lc_.load(std::memory_order_acquire) & w_mask;
+                 yield(k));
         }
-    }
 
-    void unlock_shared() noexcept {
-        lc_.fetch_sub(1, std::memory_order_release);
-    }
-};
+        void unlock() noexcept {
+            lc_.store(0, std::memory_order_release);
+        }
+
+        void lock_shared() noexcept {
+            auto old = lc_.load(std::memory_order_acquire);
+            for (unsigned k = 0;;) {
+                // if w_flag set, just continue
+                if (old & w_flag) {
+                    yield(k);
+                    old = lc_.load(std::memory_order_acquire);
+                }
+                    // otherwise try cas lc + 1 (set r-lock)
+                else if (lc_.compare_exchange_weak(old, old + 1, std::memory_order_release)) {
+                    return;
+                }
+                // set r-lock failed, old has been updated
+            }
+        }
+
+        void unlock_shared() noexcept {
+            lc_.fetch_sub(1, std::memory_order_release);
+        }
+    };
 
 } // namespace ipc

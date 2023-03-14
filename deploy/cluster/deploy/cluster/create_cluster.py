@@ -18,18 +18,18 @@ import argparse
 import os
 
 import boto3
-
 from deploy.cluster.add_nodes import batch_add_nodes
+
 from deploy.cluster import util
 
 BATCH_SIZE = 100
 
 ec2_client = boto3.client('ec2', os.getenv('AWS_REGION', 'us-east-1'))
 
+
 def create_cluster(mem_count, ebs_count, func_count, coord_count,
                    route_count, sender_count, cfile, ssh_key, cluster_name,
                    kops_bucket, aws_key_id, aws_key):
-
     if 'PHERO_HOME' not in os.environ:
         raise ValueError('PHERO_HOME environment variable must be set')
     prefix = os.path.join(os.environ['PHERO_HOME'], 'deploy/cluster/deploy/cluster')
@@ -57,7 +57,6 @@ def create_cluster(mem_count, ebs_count, func_count, coord_count,
     service_spec = util.load_yaml('yaml/services/management.yml', prefix)
     if util.get_service_address(client, 'management-service') is None:
         client.create_namespaced_service(namespace=util.NAMESPACE, body=service_spec)
-
 
     management_podname = management_spec['metadata']['name']
     kcname = management_spec['spec']['containers'][0]['name']
@@ -127,47 +126,47 @@ def create_cluster(mem_count, ebs_count, func_count, coord_count,
 
     sg_name = 'nodes.' + cluster_name
     sg = ec2_client.describe_security_groups(
-          Filters=[{'Name': 'group-name',
-                    'Values': [sg_name]}])['SecurityGroups'][0]
+        Filters=[{'Name': 'group-name',
+                  'Values': [sg_name]}])['SecurityGroups'][0]
 
     print('Authorizing ports for routing service...')
 
     permission = [
         {
-        'FromPort': 7800,
-        'IpProtocol': 'tcp',
-        'ToPort': 7950,
-        'IpRanges': [{
-            'CidrIp': '0.0.0.0/0'
-        }]},
+            'FromPort': 7800,
+            'IpProtocol': 'tcp',
+            'ToPort': 7950,
+            'IpRanges': [{
+                'CidrIp': '0.0.0.0/0'
+            }]},
         {
-        'FromPort': 6450,
-        'IpProtocol': 'tcp',
-        'ToPort': 6453,
-        'IpRanges': [{
-            'CidrIp': '0.0.0.0/0'
-        }]},
+            'FromPort': 6450,
+            'IpProtocol': 'tcp',
+            'ToPort': 6453,
+            'IpRanges': [{
+                'CidrIp': '0.0.0.0/0'
+            }]},
         {
-        'FromPort': 6200,
-        'IpProtocol': 'tcp',
-        'ToPort': 6203,
-        'IpRanges': [{
-            'CidrIp': '0.0.0.0/0'
-        }]},
+            'FromPort': 6200,
+            'IpProtocol': 'tcp',
+            'ToPort': 6203,
+            'IpRanges': [{
+                'CidrIp': '0.0.0.0/0'
+            }]},
         {
-        'FromPort': 6001,
-        'IpProtocol': 'tcp',
-        'ToPort': 6002,
-        'IpRanges': [{
-            'CidrIp': '0.0.0.0/0'
-        }]},
+            'FromPort': 6001,
+            'IpProtocol': 'tcp',
+            'ToPort': 6002,
+            'IpRanges': [{
+                'CidrIp': '0.0.0.0/0'
+            }]},
         {
-        'FromPort': 5000,
-        'IpProtocol': 'tcp',
-        'ToPort': 5080,
-        'IpRanges': [{
-            'CidrIp': '0.0.0.0/0'
-        }]}
+            'FromPort': 5000,
+            'IpProtocol': 'tcp',
+            'ToPort': 5080,
+            'IpRanges': [{
+                'CidrIp': '0.0.0.0/0'
+            }]}
     ]
 
     ec2_client.authorize_security_group_ingress(GroupId=sg['GroupId'],
@@ -195,30 +194,30 @@ if __name__ == '__main__':
 
     parser.add_argument('-m', '--memory', nargs=1, type=int, metavar='M',
                         help='The number of memory nodes to start with ' +
-                        '(required)', dest='memory', required=True)
+                             '(required)', dest='memory', required=True)
     parser.add_argument('-r', '--routing', nargs=1, type=int, metavar='R',
                         help='The number of routing  nodes in the cluster ' +
-                        '(required)', dest='routing', required=True)
+                             '(required)', dest='routing', required=True)
     parser.add_argument('-f', '--function', nargs=1, type=int, metavar='F',
                         help='The number of function nodes to start with ' +
-                        '(required)', dest='function', required=True)
+                             '(required)', dest='function', required=True)
     parser.add_argument('-c', '--coordinator', nargs=1, type=int, metavar='C',
                         help='The number of coordinator nodes to start with ' +
-                        '(required)', dest='coordinator', required=True)
+                             '(required)', dest='coordinator', required=True)
     parser.add_argument('-s', '--sender', nargs='?', type=int, metavar='S',
                         help='The number of client nodes to start with',
                         dest='sender', default=0)
     parser.add_argument('-e', '--ebs', nargs='?', type=int, metavar='E',
                         help='The number of EBS nodes to start with ' +
-                        '(optional)', dest='ebs', default=0)
+                             '(optional)', dest='ebs', default=0)
     parser.add_argument('--conf', nargs='?', type=str,
                         help='The configuration file to start the cluster with'
-                        + ' (optional)', dest='conf',
+                             + ' (optional)', dest='conf',
                         default=os.path.join(os.getenv('PHERO_HOME', '../..'),
                                              'conf/anna-base.yml'))
     parser.add_argument('--ssh-key', nargs='?', type=str,
                         help='The SSH key used to configure and connect to ' +
-                        'each node (optional)', dest='sshkey',
+                             'each node (optional)', dest='sshkey',
                         default=os.path.join(os.environ['HOME'],
                                              '.ssh/id_rsa'))
 

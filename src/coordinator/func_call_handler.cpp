@@ -12,7 +12,7 @@ void func_call_handler(logger log, string &serialized, SocketCache &pushers,
 
     string app_name = call_msg.app_name();
 
-    map<Address, string> scheduled_node_msg;
+    map <Address, string> scheduled_node_msg;
     auto req_num = call_msg.requests_size();
     string source = call_msg.source();
 
@@ -42,7 +42,7 @@ void func_call_handler(logger log, string &serialized, SocketCache &pushers,
     // batch scheduling
     if (req_num > 1) {
         int total_executors = 0;
-        vector<pair<Address, int>> avail_nodes;
+        vector <pair<Address, int>> avail_nodes;
         for (auto &pair: node_status_map) {
             if (!source.empty() && source == pair.first) {
                 continue;
@@ -123,7 +123,8 @@ void func_call_handler(logger log, string &serialized, SocketCache &pushers,
 //        log->info("No worker for app function call {}. req: {}, recv: {}, return: {}", app_name, req_num,
 //                  receive_req_stamp, return_stamp);
 
-        std::cout << "No worker for app function call " << app_name << ". req: " << req_num << ", recv: " << receive_req_stamp << ", return: " << return_stamp << std::endl;
+        std::cout << "No worker for app function call " << app_name << ". req: " << req_num << ", recv: "
+                  << receive_req_stamp << ", return: " << return_stamp << std::endl;
 
         if (!resp_address.empty()) {
             FunctionCallResponse resp;

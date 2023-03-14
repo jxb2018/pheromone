@@ -19,13 +19,13 @@ spec:
       hostNetwork: true
       hostIPC: true
       containers:
-      - name: client
-        image: cheneyyu/pheromone
-        imagePullPolicy: Always
-        env:
-        - name: COORD_IPS
-          value: COORD_IPS_DUMMY
-        - name: MANAGEMENT
-          value: MANAGEMENT_DUMMY
-        command: ["sleep"]
-        args: ["infinity"]
+        - name: client
+          image: cheneyyu/pheromone
+          imagePullPolicy: Always
+          env:
+            - name: COORD_IPS
+              value: COORD_IPS_DUMMY
+            - name: MANAGEMENT
+              value: MANAGEMENT_DUMMY
+          command: [ "sleep" ]
+          args: [ "infinity" ]

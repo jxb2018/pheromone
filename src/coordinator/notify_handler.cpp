@@ -196,10 +196,11 @@ void notify_handler(logger log, string &serialized, SocketCache &pushers,
 //                                trigger_stamp, check_stamp, package_stamp, scheduled_stamp);
 
                         std::cout << "App data-driven call " << action.function_
-                        << " to " << routed_worker
-                        << " arg_size " << action.session_keys_.size()
-                        << ". recv: " << receive_req_stamp << ", trigger: " << trigger_stamp
-                        << ", check: " << check_stamp << ", package: " << package_stamp << ", scheduled " << scheduled_stamp << ".\n";
+                                  << " to " << routed_worker
+                                  << " arg_size " << action.session_keys_.size()
+                                  << ". recv: " << receive_req_stamp << ", trigger: " << trigger_stamp
+                                  << ", check: " << check_stamp << ", package: " << package_stamp << ", scheduled "
+                                  << scheduled_stamp << ".\n";
 
                         // update avail executors in advance
                         node_status_map[routed_worker].avail_executors_--;

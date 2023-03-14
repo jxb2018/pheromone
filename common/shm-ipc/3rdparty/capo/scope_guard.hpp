@@ -20,69 +20,58 @@ namespace capo {
 /// Execute guard function when the enclosing scope exits
 ////////////////////////////////////////////////////////////////
 
-template <typename F = std::function<void()>>
-class scope_guard : capo::noncopyable
-{
-    F destructor_;
-    mutable bool dismiss_;
+    template<typename F = std::function<void()>>
+    class scope_guard : capo::noncopyable {
+        F destructor_;
+        mutable bool dismiss_;
 
-public:
-    template <typename F_>
-    scope_guard(F_&& destructor)
-        : destructor_(std::forward<F_>(destructor))
-        , dismiss_(false)
-    {}
+    public:
+        template<typename F_>
+        scope_guard(F_ &&destructor)
+                : destructor_(std::forward<F_>(destructor)), dismiss_(false) {}
 
-    scope_guard(scope_guard&& rhs)
-        : destructor_(std::move(rhs.destructor_))
-        , dismiss_(true) // dismiss rhs
-    {
-        std::swap(dismiss_, rhs.dismiss_);
-    }
-
-    ~scope_guard(void)
-    {
-        try { do_exit(); }
-        /*
-            In the realm of exceptions, it is fundamental that you can do nothing
-            if your "undo/recover" action fails.
-        */
-        catch(...) { /* Do nothing */ }
-    }
-
-    void dismiss(void) const noexcept
-    {
-        dismiss_ = true;
-    }
-
-    void do_exit(void)
-    {
-        if (!dismiss_)
+        scope_guard(scope_guard &&rhs)
+                : destructor_(std::move(rhs.destructor_)), dismiss_(true) // dismiss rhs
         {
-            dismiss_ = true;
-            destructor_();
+            std::swap(dismiss_, rhs.dismiss_);
         }
-    }
 
-    void swap(scope_guard& rhs)
-    {
-        std::swap(destructor_, rhs.destructor_);
-        std::swap(dismiss_,    rhs.dismiss_);
-    }
-};
+        ~scope_guard(void) {
+            try { do_exit(); }
+                /*
+                    In the realm of exceptions, it is fundamental that you can do nothing
+                    if your "undo/recover" action fails.
+                */
+            catch (...) { /* Do nothing */ }
+        }
 
-namespace detail_scope_guard {
+        void dismiss(void) const noexcept {
+            dismiss_ = true;
+        }
 
-struct helper
-{
-    template <typename F>
-    auto operator=(F&& destructor) -> decltype(capo::make<scope_guard>(std::forward<F>(destructor)))
-    {
-        return capo::make<scope_guard>(std::forward<F>(destructor));
-    }
-};
+        void do_exit(void) {
+            if (!dismiss_) {
+                dismiss_ = true;
+                destructor_();
+            }
+        }
 
-} // namespace detail_scope_guard
+        void swap(scope_guard &rhs) {
+            std::swap(destructor_, rhs.destructor_);
+            std::swap(dismiss_, rhs.dismiss_);
+        }
+    };
+
+    namespace detail_scope_guard {
+
+        struct helper {
+            template<typename F>
+            auto operator=(F &&destructor) -> decltype(capo::make<scope_guard>(std::forward<F>(destructor))) {
+                return capo::make<scope_guard>(std::forward<F>(destructor));
+            }
+        };
+
+    } // namespace detail_scope_guard
 
 #define CAPO_SCOPE_GUARD_V_(L)  CAPO_UNUSED_ scope_guard_##L##__
 #define CAPO_SCOPE_GUARD_L_(L)  auto CAPO_SCOPE_GUARD_V_(L) = capo::detail_scope_guard::helper{}

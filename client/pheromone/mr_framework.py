@@ -1,14 +1,8 @@
 import os
 import subprocess
-import sys
-import shutil
-import subprocess
-import json
+
 from proto.common_pb2 import *
 from proto.operation_pb2 import *
-from client import PheromoneClient
-from functools import reduce
-import argparse
 
 type_id_map = {'string': '0', 'int': '1', 'long': '2', 'double': '3'}
 

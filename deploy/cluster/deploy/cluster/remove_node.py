@@ -16,6 +16,7 @@
 
 from deploy.cluster import util
 
+
 def remove_node(ip, ntype):
     client, _ = util.init_k8s()
 

@@ -29,7 +29,6 @@ from anna.lattices import (
     OrderedSetLattice,
     PriorityLattice,
     SetLattice,
-    SingleKeyCausalLattice,
     VectorClock
 )
 

@@ -13,135 +13,125 @@
 #include <type_traits>  // std::is_array
 
 #if defined(__GNUC__)
+
 #   include <cxxabi.h>  // abi::__cxa_demangle
+
 #endif/*__GNUC__*/
 
 namespace capo {
-namespace detail_type_name {
+    namespace detail_type_name {
 
 ////////////////////////////////////////////////////////////////
 /// Ready for output
 ////////////////////////////////////////////////////////////////
 
 // Forward declarations
-template <typename T, bool IsBase = false>
-struct check;
+        template<typename T, bool IsBase = false>
+        struct check;
 
 /*
     Output state management
 */
 
-class output
-{
-    bool is_compact_ = true;
+        class output {
+            bool is_compact_ = true;
 
-    template <typename T>
-    bool check_empty(const T&) { return false; }
-    bool check_empty(const char* val)
-    {
-        return (!val) || (val[0] == 0);
-    }
+            template<typename T>
+            bool check_empty(const T &) { return false; }
 
-    template <typename T>
-    void out(const T& val)
-    {
-        if (check_empty(val)) return;
-        if (!is_compact_) sr_ += " ";
-        std::ostringstream ss;
-        ss << val;
-        sr_ += ss.str();
-        is_compact_ = false;
-    }
+            bool check_empty(const char *val) {
+                return (!val) || (val[0] == 0);
+            }
 
-    std::string& sr_;
+            template<typename T>
+            void out(const T &val) {
+                if (check_empty(val)) return;
+                if (!is_compact_) sr_ += " ";
+                std::ostringstream ss;
+                ss << val;
+                sr_ += ss.str();
+                is_compact_ = false;
+            }
 
-public:
-    output(std::string& sr) : sr_(sr) {}
+            std::string &sr_;
 
-    output& operator()(void) { return (*this); }
+        public:
+            output(std::string &sr) : sr_(sr) {}
 
-    template <typename T1, typename... T>
-    output& operator()(const T1& val, const T&... args)
-    {
-        out(val);
-        return operator()(args...);
-    }
+            output &operator()(void) { return (*this); }
 
-    output& compact(void)
-    {
-        is_compact_ = true;
-        return (*this);
-    }
-};
+            template<typename T1, typename... T>
+            output &operator()(const T1 &val, const T &... args) {
+                out(val);
+                return operator()(args...);
+            }
+
+            output &compact(void) {
+                is_compact_ = true;
+                return (*this);
+            }
+        };
 
 // ()
 
-template <bool>
-struct bracket
-{
-    output& out_;
+        template<bool>
+        struct bracket {
+            output &out_;
 
-    bracket(output& out, const char* = nullptr) : out_(out)
-    { out_("(").compact(); }
+            bracket(output &out, const char * = nullptr) : out_(out) { out_("(").compact(); }
 
-    ~bracket(void)
-    { out_.compact()(")"); }
-};
+            ~bracket(void) { out_.compact()(")"); }
+        };
 
-template <>
-struct bracket<false>
-{
-    bracket(output& out, const char* str = nullptr)
-    { out(str); }
-};
+        template<>
+        struct bracket<false> {
+            bracket(output &out, const char *str = nullptr) { out(str); }
+        };
 
 // [N]
 
-template <size_t N = 0>
-struct bound
-{
-    output& out_;
+        template<size_t N = 0>
+        struct bound {
+            output &out_;
 
-    bound(output& out) : out_(out) {}
-    ~bound(void)
-    {
-        if (N == 0) out_("[]");
-        else        out_("[").compact()
-                        ( N ).compact()
-                        ("]");
-    }
-};
+            bound(output &out) : out_(out) {}
+
+            ~bound(void) {
+                if (N == 0) out_("[]");
+                else
+                    out_("[").compact()
+                            (N).compact()
+                            ("]");
+            }
+        };
 
 // (P1, P2, ...)
 
-template <bool, typename... P>
-struct parameter;
+        template<bool, typename... P>
+        struct parameter;
 
-template <bool IsStart>
-struct parameter<IsStart>
-{
-    output& out_;
+        template<bool IsStart>
+        struct parameter<IsStart> {
+            output &out_;
 
-    parameter(output& out) : out_(out) {}
-    ~parameter(void)
-    { bracket<IsStart> { out_ }; }
-};
+            parameter(output &out) : out_(out) {}
 
-template <bool IsStart, typename P1, typename... P>
-struct parameter<IsStart, P1, P...>
-{
-    output& out_;
+            ~parameter(void) { bracket<IsStart>{out_}; }
+        };
 
-    parameter(output& out) : out_(out) {}
-    ~parameter(void)
-    {
-        [this](bracket<IsStart>&&)
-        {
-            check<P1> { out_ };
-            parameter<false, P...> { out_.compact() };
-        } (bracket<IsStart> { out_, "," });
-    }
-};
+        template<bool IsStart, typename P1, typename... P>
+        struct parameter<IsStart, P1, P...> {
+            output &out_;
+
+            parameter(output &out) : out_(out) {}
+
+            ~parameter(void) {
+                [this](bracket<IsStart> &&) {
+                    check<P1>{out_};
+                    parameter<false, P...>{out_.compact()};
+                }(bracket<IsStart>{out_, ","});
+            }
+        };
 
 ////////////////////////////////////////////////////////////////
 /// Template specializations for checking
@@ -151,25 +141,23 @@ struct parameter<IsStart, P1, P...>
     CV-qualifiers, references, pointers
 */
 
-template <typename T, bool IsBase>
-struct check
-{
-    output out_;
-    check(const output& out) : out_(out)
-    {
+        template<typename T, bool IsBase>
+        struct check {
+            output out_;
+
+            check(const output &out) : out_(out) {
 #   if defined(__GNUC__)
-        const char* typeid_name = typeid(T).name();
-        char* real_name = abi::__cxa_demangle(typeid_name, nullptr, nullptr, nullptr);
-        CAPO_SCOPE_GUARD_ = [real_name]
-        {
-            if (real_name) ::free(real_name);
-        };
-        out_(real_name ? real_name : typeid_name);
+                const char *typeid_name = typeid(T).name();
+                char *real_name = abi::__cxa_demangle(typeid_name, nullptr, nullptr, nullptr);
+                CAPO_SCOPE_GUARD_ = [real_name] {
+                    if (real_name) ::free(real_name);
+                };
+                out_(real_name ? real_name : typeid_name);
 #   else /*__GNUC__*/
-        out_(typeid(T).name());
+                out_(typeid(T).name());
 #   endif/*__GNUC__*/
-    }
-};
+            }
+        };
 
 #pragma push_macro("CAPO_CHECK_TYPE__")
 #undef  CAPO_CHECK_TYPE__
@@ -182,12 +170,17 @@ struct check
         check(const output& out) : base_t(out) { out_(#OPT); } \
     };
 
-CAPO_CHECK_TYPE__(const)
-CAPO_CHECK_TYPE__(volatile)
-CAPO_CHECK_TYPE__(const volatile)
-CAPO_CHECK_TYPE__(&)
-CAPO_CHECK_TYPE__(&&)
-CAPO_CHECK_TYPE__(*)
+        CAPO_CHECK_TYPE__(const)
+
+        CAPO_CHECK_TYPE__(volatile)
+
+        CAPO_CHECK_TYPE__(const volatile)
+
+        CAPO_CHECK_TYPE__(&)
+
+        CAPO_CHECK_TYPE__(&&)
+
+        CAPO_CHECK_TYPE__(*)
 
 #pragma pop_macro("CAPO_CHECK_TYPE__")
 
@@ -224,11 +217,15 @@ CAPO_CHECK_TYPE__(*)
 
 #define CAPO_CHECK_TYPE_PLACEHOLDER__
 
-CAPO_CHECK_TYPE_ARRAY_CV__(CAPO_CHECK_TYPE_PLACEHOLDER__)
+        CAPO_CHECK_TYPE_ARRAY_CV__(CAPO_CHECK_TYPE_PLACEHOLDER__)
+
 #if defined(__GNUC__)
-CAPO_CHECK_TYPE_ARRAY_CV__(0)
+
+        CAPO_CHECK_TYPE_ARRAY_CV__(0)
+
 #endif/*__GNUC__*/
-CAPO_CHECK_TYPE_ARRAY_CV__(N, size_t N)
+
+        CAPO_CHECK_TYPE_ARRAY_CV__(N, size_t N)
 
 #pragma pop_macro("CAPO_CHECK_TYPE_PLACEHOLDER__")
 #pragma pop_macro("CAPO_CHECK_TYPE_ARRAY_CV__")
@@ -238,34 +235,31 @@ CAPO_CHECK_TYPE_ARRAY_CV__(N, size_t N)
     Functions
 */
 
-template <typename T, bool IsBase, typename... P>
-struct check<T(P...), IsBase> : check<T, true>
-{
-    using base_t = check<T, true>;
-    using base_t::out_;
+        template<typename T, bool IsBase, typename... P>
+        struct check<T(P...), IsBase> : check<T, true> {
+            using base_t = check<T, true>;
+            using base_t::out_;
 
-    parameter<true, P...> parameter_ = out_;
-    bracket<IsBase>       bracket_   = out_;
+            parameter<true, P...> parameter_ = out_;
+            bracket<IsBase> bracket_ = out_;
 
-    check(const output& out) : base_t(out) {}
-};
+            check(const output &out) : base_t(out) {}
+        };
 
 /*
     Pointers to members
 */
 
-template <typename T, bool IsBase, typename C>
-struct check<T C::*, IsBase> : check<T, true>
-{
-    using base_t = check<T, true>;
-    using base_t::out_;
+        template<typename T, bool IsBase, typename C>
+        struct check<T C::*, IsBase> : check<T, true> {
+            using base_t = check<T, true>;
+            using base_t::out_;
 
-    check(const output& out) : base_t(out)
-    {
-        check<C> { out_ };
-        out_.compact()("::*");
-    }
-};
+            check(const output &out) : base_t(out) {
+                check<C>{out_};
+                out_.compact()("::*");
+            }
+        };
 
 /*
     Pointers to member functions
@@ -290,14 +284,17 @@ struct check<T C::*, IsBase> : check<T, true>
         }                                                         \
     };
 
-CAPO_CHECK_TYPE_MEM_FUNC__()
-CAPO_CHECK_TYPE_MEM_FUNC__(const)
-CAPO_CHECK_TYPE_MEM_FUNC__(volatile)
-CAPO_CHECK_TYPE_MEM_FUNC__(const volatile)
+        CAPO_CHECK_TYPE_MEM_FUNC__()
+
+        CAPO_CHECK_TYPE_MEM_FUNC__(const)
+
+        CAPO_CHECK_TYPE_MEM_FUNC__(volatile)
+
+        CAPO_CHECK_TYPE_MEM_FUNC__(const volatile)
 
 #pragma pop_macro("CAPO_CHECK_TYPE_MEM_FUNC__")
 
-} // namespace detail_type_name
+    } // namespace detail_type_name
 
 ////////////////////////////////////////////////////////////////
 /// Get the name of the given type
@@ -309,12 +306,11 @@ CAPO_CHECK_TYPE_MEM_FUNC__(const volatile)
     void const volatile *
 */
 
-template <typename T>
-inline std::string type_name(void)
-{
-    std::string str;
-    detail_type_name::check<T> { str };
-    return str;
-}
+    template<typename T>
+    inline std::string type_name(void) {
+        std::string str;
+        detail_type_name::check<T>{str};
+        return str;
+    }
 
 } // namespace capo

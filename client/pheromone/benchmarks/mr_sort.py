@@ -1,6 +1,7 @@
+import subprocess
+
 from bench_common import *
 from mr_framework import MR
-import subprocess
 
 func_num = 200
 map_inputs = [f'sort_map{i}' for i in range(func_num)]

@@ -615,7 +615,8 @@ void run(CommHelperInterface *helper, Address ip, unsigned thread_id, unsigned e
                         auto cur_stamp = std::chrono::duration_cast<std::chrono::microseconds>(
                                 std::chrono::system_clock::now().time_since_epoch()).count();
 //                        log->info("Kvs GET {}, recv: {}, ready: {}", comm_resp.data_key_, recv_stamp, cur_stamp);
-                        std::cout << "Kvs GET " << comm_resp.data_key_ << ", recv: " << recv_stamp << ", ready: " << cur_stamp << "\n";
+                        std::cout << "Kvs GET " << comm_resp.data_key_ << ", recv: " << recv_stamp << ", ready: "
+                                  << cur_stamp << "\n";
                         send_to_executer(executor_chans_map[inflight_get_req.executor_id_], resp);
                     }
                     key_remote_get_map.erase(local_obj_name);
@@ -633,7 +634,8 @@ void run(CommHelperInterface *helper, Address ip, unsigned thread_id, unsigned e
                         auto cur_stamp = std::chrono::duration_cast<std::chrono::microseconds>(
                                 std::chrono::system_clock::now().time_since_epoch()).count();
 //                        log->info("Kvs PUT {}, recv: {}, ready: {}", comm_resp.data_key_, recv_stamp, cur_stamp);
-                        std::cout << "Kvs PUT " << comm_resp.data_key_ << ", recv: " << recv_stamp << ", ready: " << cur_stamp << "\n";
+                        std::cout << "Kvs PUT " << comm_resp.data_key_ << ", recv: " << recv_stamp << ", ready: "
+                                  << cur_stamp << "\n";
                         send_to_executer(executor_chans_map[inflight_put_req.executor_id_], resp);
                     }
                     key_ksv_put_map.erase(comm_resp.data_key_);

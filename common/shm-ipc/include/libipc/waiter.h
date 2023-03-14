@@ -5,89 +5,112 @@
 
 namespace ipc {
 
-class condition;
-class IPC_EXPORT mutex {
-public:
-    mutex();
-    explicit mutex(char const * name);
-    mutex(mutex&& rhs);
+    class condition;
 
-    ~mutex();
+    class IPC_EXPORT mutex {
+    public:
+        mutex();
 
-    static void remove(char const * name);
+        explicit mutex(char const *name);
 
-    void swap(mutex& rhs);
-    mutex& operator=(mutex rhs);
+        mutex(mutex &&rhs);
 
-    bool         valid() const;
-    char const * name () const;
+        ~mutex();
 
-    bool open (char const * name);
-    void close();
+        static void remove(char const *name);
 
-    bool lock  ();
-    bool unlock();
+        void swap(mutex &rhs);
 
-private:
-    class mutex_;
-    mutex_* p_;
+        mutex &operator=(mutex rhs);
 
-    friend class condition;
-};
+        bool valid() const;
 
-class IPC_EXPORT semaphore {
-public:
-    semaphore();
-    explicit semaphore(char const * name);
-    semaphore(semaphore&& rhs);
+        char const *name() const;
 
-    ~semaphore();
+        bool open(char const *name);
 
-    static void remove(char const * name);
+        void close();
 
-    void swap(semaphore& rhs);
-    semaphore& operator=(semaphore rhs);
+        bool lock();
 
-    bool         valid() const;
-    char const * name () const;
+        bool unlock();
 
-    bool open (char const * name, long count = 0);
-    void close();
+    private:
+        class mutex_;
 
-    bool wait(std::size_t tm = invalid_value);
-    bool post(long count = 1);
+        mutex_ *p_;
 
-private:
-    class semaphore_;
-    semaphore_* p_;
-};
+        friend class condition;
+    };
 
-class IPC_EXPORT condition {
-public:
-    condition();
-    explicit condition(char const * name);
-    condition(condition&& rhs);
+    class IPC_EXPORT semaphore {
+    public:
+        semaphore();
 
-    ~condition();
+        explicit semaphore(char const *name);
 
-    static void remove(char const * name);
+        semaphore(semaphore &&rhs);
 
-    void swap(condition& rhs);
-    condition& operator=(condition rhs);
+        ~semaphore();
 
-    bool         valid() const;
-    char const * name () const;
+        static void remove(char const *name);
 
-    bool open (char const * name);
-    void close();
+        void swap(semaphore &rhs);
 
-    bool wait(mutex&, std::size_t tm = invalid_value);
-    bool notify();
-    bool broadcast();
+        semaphore &operator=(semaphore rhs);
 
-private:
-    class condition_;
-    condition_* p_;
-};
+        bool valid() const;
+
+        char const *name() const;
+
+        bool open(char const *name, long count = 0);
+
+        void close();
+
+        bool wait(std::size_t tm = invalid_value);
+
+        bool post(long count = 1);
+
+    private:
+        class semaphore_;
+
+        semaphore_ *p_;
+    };
+
+    class IPC_EXPORT condition {
+    public:
+        condition();
+
+        explicit condition(char const *name);
+
+        condition(condition &&rhs);
+
+        ~condition();
+
+        static void remove(char const *name);
+
+        void swap(condition &rhs);
+
+        condition &operator=(condition rhs);
+
+        bool valid() const;
+
+        char const *name() const;
+
+        bool open(char const *name);
+
+        void close();
+
+        bool wait(mutex &, std::size_t tm = invalid_value);
+
+        bool notify();
+
+        bool broadcast();
+
+    private:
+        class condition_;
+
+        condition_ *p_;
+    };
 
 } // namespace ipc

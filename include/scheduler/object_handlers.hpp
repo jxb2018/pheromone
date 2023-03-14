@@ -15,13 +15,13 @@
 #include "common.hpp"
 #include "trigger.hpp"
 
-void copy_to_shm_obj(string &key_name, const char* data_src, unsigned data_size);
+void copy_to_shm_obj(string &key_name, const char *data_src, unsigned data_size);
 
-pair<char*, unsigned> get_shm_obj(string &key_name);
+pair<char *, unsigned> get_shm_obj(string &key_name);
 
-void check_object_arrival(logger log, BucketKey &bucket_key, map<Bucket, 
-                            vector<TriggerPointer>> &bucket_triggers_map, vector<string> &active_triggers, 
-                            vector<TriggerFunctionMetadata> &active_func_metadata);
+void check_object_arrival(logger log, BucketKey &bucket_key, map<Bucket,
+        vector<TriggerPointer>> &bucket_triggers_map, vector<string> &active_triggers,
+                          vector<TriggerFunctionMetadata> &active_func_metadata);
 
 // void check_re_execution();
 

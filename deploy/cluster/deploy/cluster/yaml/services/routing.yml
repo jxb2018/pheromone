@@ -19,17 +19,17 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-  - port: 6450
-    targetPort: 6450
-    name: routing-0
-  - port: 6451
-    targetPort: 6451
-    name: routing-1
-  - port: 6452
-    targetPort: 6452
-    name: routing-2
-  - port: 6453
-    targetPort: 6453
-    name: routing-3
+    - port: 6450
+      targetPort: 6450
+      name: routing-0
+    - port: 6451
+      targetPort: 6451
+      name: routing-1
+    - port: 6452
+      targetPort: 6452
+      name: routing-2
+    - port: 6453
+      targetPort: 6453
+      name: routing-3
   selector:
     role: routing

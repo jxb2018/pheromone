@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < app_num; i++) {
         auto app_name = "app_" + std::to_string(i);
-        auto func_name = "inc";
+        auto func_name = "inc6";
         auto coord_thread = get_coord(app_name, app_coord_map, mngt_socket);
         AppRegistration msg;
         msg.set_app_name(app_name);
@@ -82,7 +82,10 @@ int main(int argc, char *argv[]) {
             std::chrono::system_clock::now().time_since_epoch()).count();
     FunctionCall call;
     auto req = call.add_requests();
-    req->set_name("empty");
+    req->set_name("inc6");
+    auto arg = req->add_arguments();
+    arg->set_body("51");
+    arg->set_arg_flag(0);
 
     // int batch_size = 10000; // req_num in batch
     // unsigned req_num = 0;
