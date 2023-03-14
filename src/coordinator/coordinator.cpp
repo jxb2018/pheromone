@@ -53,6 +53,7 @@ void run(Address public_ip, Address private_ip, unsigned thread_id) {
     auto res = context.setctxopt(ZMQ_MAX_SOCKETS, kMaxSocketNumber);
     if (res == 0) {
         log->info("Successfully set max socket number to {}", kMaxSocketNumber);
+        std::cout << "Successfully set max socket number to " << kMaxSocketNumber << std::endl;
     } else {
         log->error("E: socket error number {} ({})", errno, zmq_strerror(errno));
     }
@@ -222,8 +223,11 @@ void run(Address public_ip, Address private_ip, unsigned thread_id) {
         if (duration >= CoordReportThreshold) {
             report_start = std::chrono::system_clock::now();
             // TODO remote out-of-data node status
-            log->info("Coordinator report. notify_count: {}, query_count: {}, call_count: {}", notify_count,
-                      query_count, call_count);
+//            log->info("Coordinator report. notify_count: {}, query_count: {}, call_count: {}", notify_count,
+//                      query_count, call_count);
+            std::cout << "Coordinator report. notify_count: " << notify_count
+                      << ", query_count: " << query_count
+                      << ", call_count: " << call_count << "\n";
 
         }
 
@@ -236,16 +240,20 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    YAML::Node conf = YAML::LoadFile("conf/config.yml");
+    auto config_file_path = getenv("CONFIG_FILE");
+    assert(config_file_path != nullptr);
 
-    unsigned threads = conf["coord_threads"].as<unsigned>();
+    YAML::Node conf = YAML::LoadFile(config_file_path);
+    auto coordinator = conf["coordinator"];
+
+    unsigned threads = coordinator["coord_threads"].as<unsigned>();
     std::cout << "Thread count " << threads << std::endl;
 
-    io_thread_num = conf["io_threads"].as<unsigned>();
+    io_thread_num = coordinator["io_threads"].as<unsigned>();
 
-    managementAddress = "tcp://" + conf["manager"].as<string>() + ":" + std::to_string(coordSyncPort);
+    managementAddress = "tcp://" + coordinator["manager"].as<string>() + ":" + std::to_string(coordSyncPort);
 
-    YAML::Node ip = conf["ip"];
+    YAML::Node ip = coordinator["ip"];
     Address private_ip = ip["private"].as<Address>();
     Address public_ip = ip["public"].as<Address>();
 

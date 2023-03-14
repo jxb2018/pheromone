@@ -72,6 +72,10 @@ inline int get_avail_executor_num(map<uint8_t, uint8_t> &executor_status_map) {
 }
 
 inline void send_to_executer(shm_chan_t *chan_ptr, string msg) {
+    if (chan_ptr == nullptr) {
+        std::cerr << "chan_ptr = nullptr, Send to executer failed.\n";
+        return;
+    }
     if (!chan_ptr->send(msg)) {
         std::cerr << "Send to executer failed.\n";
 
@@ -175,9 +179,9 @@ void schedule_func_call(logger log, CommHelperInterface *helper, map<uint8_t, ui
         auto sched_time = std::chrono::system_clock::now();
         auto sched_stamp = std::chrono::duration_cast<std::chrono::microseconds>(sched_time.time_since_epoch()).count();
 
-        // std::cout << "Schedule function " << func_name << " to executor " << executor_id << "\n" << std::flush;
-        log->info("Schedule function {} with arg_flag {} to executor {}. sched_time: {}", func_name, arg_flag,
-                  executor_id, sched_stamp);
+        std::cout << "Schedule function " << func_name << " to executor " << executor_id << "\n";
+//        log->info("Schedule function {} with arg_flag {} to executor {}. sched_time: {}", func_name, arg_flag,
+//                  executor_id, sched_stamp);
         send_to_executer(executor_chans_map[executor_id], resp);
         executor_status_map[executor_id] = 2;
 
@@ -285,7 +289,7 @@ void run(CommHelperInterface *helper, Address ip, unsigned thread_id, unsigned e
     map<Bucket, vector<TriggerPointer>> bucket_triggers_map;
 
     std::cout << "Running kvs server...\n";
-    log->info("Running kvs server");
+//    log->info("Running kvs server");
 
     auto report_start = std::chrono::system_clock::now();
     auto report_end = std::chrono::system_clock::now();
@@ -329,7 +333,9 @@ void run(CommHelperInterface *helper, Address ip, unsigned thread_id, unsigned e
                         auto recv_time = std::chrono::duration_cast<std::chrono::microseconds>(
                                 recv_stamp.time_since_epoch()).count();
 
-                        log->info("Get local {}, recv: {}, ready: {}", key_name, recv_time, ready_time);
+//                        log->info("Get local {}, recv: {}, ready: {}", key_name, recv_time, ready_time);
+                        std::cout << "Get local " << key_name << ", recv: " << recv_time << ", ready: " << ready_time
+                                  << std::endl;
 
                         send_to_executer(executor_chans_map[executor_id], resp);
                     } else {
@@ -435,7 +441,8 @@ void run(CommHelperInterface *helper, Address ip, unsigned thread_id, unsigned e
                             } else if (is_data_packing == 2) {
                                 helper->notify_put(bucket_key, active_triggers, session_client_addr_map[session_id]);
                             }
-                            log->info("Notified data {}", obj_name);
+//                            log->info("Notified data {}", obj_name);
+                            std::cout << "Notified data " << obj_name << std::endl;
                             call_id += active_triggers.size();
                         }
                     }
@@ -523,7 +530,8 @@ void run(CommHelperInterface *helper, Address ip, unsigned thread_id, unsigned e
                         }
                         auto check_name = std::chrono::duration_cast<std::chrono::microseconds>(
                                 std::chrono::system_clock::now().time_since_epoch()).count();
-                        log->info("Check and fetch function args at: {}", check_name);
+//                        log->info("Check and fetch function args at: {}", check_name);
+                        std::cout << "Check and fetch function args at: " << check_name << "\n";
                         // If all the args can be found locally, we just schedule this call
                         if (inflight_args.inflight_args_.empty()) {
                             vector<string> func_full_args;
@@ -559,6 +567,9 @@ void run(CommHelperInterface *helper, Address ip, unsigned thread_id, unsigned e
                         auto cur_stamp = std::chrono::duration_cast<std::chrono::microseconds>(
                                 std::chrono::system_clock::now().time_since_epoch()).count();
                         log->info("Get remote {}, recv: {}, ready: {}", comm_resp.data_key_, recv_stamp, cur_stamp);
+                        std::cout << "Get remote " << comm_resp.data_key_ <<
+                                  ", recv: " << recv_stamp <<
+                                  ", ready: " << cur_stamp << "\n";
                         send_to_executer(executor_chans_map[inflight_get_req.executor_id_], resp);
                     }
                     key_remote_get_map.erase(comm_resp.data_key_);
@@ -603,7 +614,8 @@ void run(CommHelperInterface *helper, Address ip, unsigned thread_id, unsigned e
                                 inflight_get_req.recv_time_.time_since_epoch()).count();
                         auto cur_stamp = std::chrono::duration_cast<std::chrono::microseconds>(
                                 std::chrono::system_clock::now().time_since_epoch()).count();
-                        log->info("Kvs GET {}, recv: {}, ready: {}", comm_resp.data_key_, recv_stamp, cur_stamp);
+//                        log->info("Kvs GET {}, recv: {}, ready: {}", comm_resp.data_key_, recv_stamp, cur_stamp);
+                        std::cout << "Kvs GET " << comm_resp.data_key_ << ", recv: " << recv_stamp << ", ready: " << cur_stamp << "\n";
                         send_to_executer(executor_chans_map[inflight_get_req.executor_id_], resp);
                     }
                     key_remote_get_map.erase(local_obj_name);
@@ -620,7 +632,8 @@ void run(CommHelperInterface *helper, Address ip, unsigned thread_id, unsigned e
                                 inflight_put_req.recv_time_.time_since_epoch()).count();
                         auto cur_stamp = std::chrono::duration_cast<std::chrono::microseconds>(
                                 std::chrono::system_clock::now().time_since_epoch()).count();
-                        log->info("Kvs PUT {}, recv: {}, ready: {}", comm_resp.data_key_, recv_stamp, cur_stamp);
+//                        log->info("Kvs PUT {}, recv: {}, ready: {}", comm_resp.data_key_, recv_stamp, cur_stamp);
+                        std::cout << "Kvs PUT " << comm_resp.data_key_ << ", recv: " << recv_stamp << ", ready: " << cur_stamp << "\n";
                         send_to_executer(executor_chans_map[inflight_put_req.executor_id_], resp);
                     }
                     key_ksv_put_map.erase(comm_resp.data_key_);
@@ -702,7 +715,10 @@ int main(int argc, char *argv[]) {
     ::signal(SIGHUP, exit);
 
     // read the YAML conf
-    YAML::Node conf = YAML::LoadFile("conf/config.yml");
+    auto config_file_path = getenv("CONFIG_FILE");
+    assert(config_file_path != nullptr);
+
+    YAML::Node conf = YAML::LoadFile(config_file_path)["scheduler"];
     std::cout << "Read file config.yml" << std::endl;
 
     unsigned coordThreadCount = conf["threads"]["coord"].as<unsigned>();

@@ -55,7 +55,8 @@ void notify_handler(logger log, string &serialized, SocketCache &pushers,
                 // it means the bucket has not been created
             else {
                 kvs_error = KVSError::BUCKET_NE;
-                log->info("Notifying handler error: Bucket not found");
+                //log->info("Notifying handler error: Bucket not found");
+                std::cout << "Notifying handler error: Bucket not found\n";
                 break;
             }
         }
@@ -179,7 +180,8 @@ void notify_handler(logger log, string &serialized, SocketCache &pushers,
                     }
 
                     if (routed_worker.empty()) {
-                        log->info("No available worker found for app {}", internalCall.app_name());
+                        //log->info("No available worker found for app {}", internalCall.app_name());
+                        std::cout << "No available worker found for app " << internalCall.app_name() << std::endl;
                     } else {
                         string address = get_func_exec_address(routed_worker, rand_r(&seed) % io_thread_num);
                         auto scheduled_stamp = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -188,10 +190,16 @@ void notify_handler(logger log, string &serialized, SocketCache &pushers,
                         string call_serialized;
                         internalCall.SerializeToString(&call_serialized);
                         kZmqUtil->send_string(call_serialized, &pushers[address]);
-                        log->info(
-                                "App data-driven call {} to {} arg_size {}. recv: {}, trigger: {}, check: {}, package: {}, scheduled {}.",
-                                action.function_, routed_worker, action.session_keys_.size(), receive_req_stamp,
-                                trigger_stamp, check_stamp, package_stamp, scheduled_stamp);
+//                        log->info(
+//                                "App data-driven call {} to {} arg_size {}. recv: {}, trigger: {}, check: {}, package: {}, scheduled {}.",
+//                                action.function_, routed_worker, action.session_keys_.size(), receive_req_stamp,
+//                                trigger_stamp, check_stamp, package_stamp, scheduled_stamp);
+
+                        std::cout << "App data-driven call " << action.function_
+                        << " to " << routed_worker
+                        << " arg_size " << action.session_keys_.size()
+                        << ". recv: " << receive_req_stamp << ", trigger: " << trigger_stamp
+                        << ", check: " << check_stamp << ", package: " << package_stamp << ", scheduled " << scheduled_stamp << ".\n";
 
                         // update avail executors in advance
                         node_status_map[routed_worker].avail_executors_--;

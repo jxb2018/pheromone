@@ -1,0 +1,34 @@
+# For Manager
+manager:
+  ip: 127.0.0.1
+  external: 0
+
+# For Coordinator
+coordinator:
+  coord_threads: 1
+  io_threads: 1
+  manager: 127.0.0.1
+  ip:
+    private: 127.0.0.1
+    public: 127.0.0.1
+
+# For Executor
+executor:
+  func_dir: /tmp/shm
+  wait: 30
+  ip: 127.0.0.1
+  thread_id: 1
+
+scheduler:
+  threads:
+    coord: 1
+    io: 1
+  func_dir: /tmp/shm
+  delay: 30
+  shared: 1
+  forward_or_reject: 1
+  user:
+    ip: 127.0.0.1
+    executor: 1
+    coord:
+     - 127.0.0.1

@@ -120,8 +120,11 @@ void func_call_handler(logger log, string &serialized, SocketCache &pushers,
     if (scheduled_node_msg.empty()) {
         auto return_stamp = std::chrono::duration_cast<std::chrono::microseconds>(
                 std::chrono::system_clock::now().time_since_epoch()).count();
-        log->info("No worker for app function call {}. req: {}, recv: {}, return: {}", app_name, req_num,
-                  receive_req_stamp, return_stamp);
+//        log->info("No worker for app function call {}. req: {}, recv: {}, return: {}", app_name, req_num,
+//                  receive_req_stamp, return_stamp);
+
+        std::cout << "No worker for app function call " << app_name << ". req: " << req_num << ", recv: " << receive_req_stamp << ", return: " << return_stamp << std::endl;
+
         if (!resp_address.empty()) {
             FunctionCallResponse resp;
             resp.set_app_name(app_name);
@@ -141,6 +144,6 @@ void func_call_handler(logger log, string &serialized, SocketCache &pushers,
         }
         std::cout << "App function call " << app_name << ". recv: " << receive_req_stamp << ", scheduled: "
                   << scheduled_stamp << std::endl;
-        log->info("App function call {}. recv: {}, scheduled {}.", app_name, receive_req_stamp, scheduled_stamp);
+//        log->info("App function call {}. recv: {}, scheduled {}.", app_name, receive_req_stamp, scheduled_stamp);
     }
 }

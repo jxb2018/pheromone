@@ -32,7 +32,8 @@ void trigger_op_handler(logger log, string &serialized, string &private_ip, unsi
                 log->error("Unknown primitive type when adding Trigger {} in Bucket {}.", trigger_name, bucket_name);
             }
             response.set_error(KVSError::SUCCESS);
-            log->info("Add Trigger {} in Bucket {}.", trigger_name, bucket_name);
+//            log->info("Add Trigger {} in Bucket {}.", trigger_name, bucket_name);
+            std::cout << "Add Trigger " << trigger_name << " in Bucket " << bucket_name << std::endl;
 
             trigger_msg.set_msg_type(0);
 

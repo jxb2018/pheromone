@@ -46,8 +46,9 @@ bool load_function(logger log, string &func_name, map<string, CppFunction> &name
     name_func_map[func_name] = func;
     auto lib_load_elasped = std::chrono::duration_cast<std::chrono::microseconds>(lib_load_t - start_t).count();
     auto func_load_elasped = std::chrono::duration_cast<std::chrono::microseconds>(func_load_t - lib_load_t).count();
-    log->info("Loaded function {}. lib_load_elasped: {}, func_load_elasped: {}", func_name, lib_load_elasped,
-              func_load_elasped);
+//    log->info("Loaded function {}. lib_load_elasped: {}, func_load_elasped: {}", func_name, lib_load_elasped,
+//              func_load_elasped);
+    std::cout << "Loaded function " << func_name << ". lib_load_elasped: " << lib_load_elasped << ", func_load_elasped: " << func_load_elasped << std::endl;
     return true;
 }
 
@@ -74,7 +75,7 @@ void run(Address ip, unsigned thread_id) {
     local_chan = new shm_chan_t{chan_name.c_str(), ipc::receiver};
 
     std::cout << "Running executor...\n";
-    log->info("Running executor...");
+//    log->info("Running executor...");
 
     auto report_start = std::chrono::system_clock::now();
     auto report_end = std::chrono::system_clock::now();
@@ -174,7 +175,10 @@ void run(Address ip, unsigned thread_id) {
                 auto parse_time = std::chrono::duration_cast<std::chrono::microseconds>(
                         parse_stamp.time_since_epoch()).count();
 
-                log->info("Executing {} arg_size: {}. recv: {}, parse: {}", func_name, arg_size, recv_time, parse_time);
+//                log->info("Executing {} arg_size: {}. recv: {}, parse: {}", func_name, arg_size, recv_time, parse_time);
+
+                std::cout << "Executing " << func_name << "arg_size: " << arg_size << ". recv: " << recv_time
+                          << ", parse : " << parse_time << std::endl;
 
                 int exit_signal = 1;
 
@@ -205,8 +209,8 @@ void run(Address ip, unsigned thread_id) {
 
                 auto execute_time = std::chrono::duration_cast<std::chrono::microseconds>(
                         execute_stamp.time_since_epoch()).count();
-                log->info("Executed {} at: {}", func_name, execute_time);
-                // std::cout << "Executed function " << func_name << "\n" << std::flush;
+//                log->info("Executed {} at: {}", func_name, execute_time);
+                std::cout << "Executed function " << func_name << "\n";
 
             }
         }
@@ -237,19 +241,23 @@ int main(int argc, char *argv[]) {
     ::signal(SIGHUP, exit);
 
     // read the YAML conf
-    YAML::Node conf = YAML::LoadFile("conf/config.yml");
+    auto config_file_path = getenv("CONFIG_FILE");
+    assert(config_file_path != nullptr);
+
+    YAML::Node conf = YAML::LoadFile(config_file_path);
+    auto executor = conf["executor"];
     std::cout << "Read file config.yml" << std::endl;
 
-    funcDir = conf["func_dir"].as<string>();
+    funcDir = executor["func_dir"].as<string>();
 
-    if (YAML::Node wait_tm = conf["wait"]) {
+    if (YAML::Node wait_tm = executor["wait"]) {
         RecvWaitTm = wait_tm.as<unsigned>();
     } else {
         RecvWaitTm = 0;
     }
 
-    Address ip = conf["ip"].as<Address>();
-    unsigned thread_id = conf["thread_id"].as<unsigned>();
+    Address ip = executor["ip"].as<Address>();
+    unsigned thread_id = executor["thread_id"].as<unsigned>();
 
     run(ip, thread_id);
 }

@@ -40,13 +40,18 @@ get_coord(string &app_name, map<string, pair<string, unsigned>> &app_coord_map, 
 
 int main(int argc, char *argv[]) {
     // read the YAML conf
-    YAML::Node conf = YAML::LoadFile("conf/config.yml");
+//    YAML::Node conf = YAML::LoadFile("conf/config.yml");
 
-    Address management = conf["management"].as<Address>();
-    Address ip = conf["ip"].as<Address>();
+//    Address management = conf["management"].as<Address>();
+////    Address ip = conf["ip"].as<Address>();
+//
+//    unsigned app_num = conf["app"].as<unsigned>();
+//    unsigned req_num = conf["req"].as<unsigned>();
 
-    unsigned app_num = conf["app"].as<unsigned>();
-    unsigned req_num = conf["req"].as<unsigned>();
+
+    Address management = "127.0.0.1";
+    unsigned app_num = 1, req_num = 1;
+
     // unsigned sleep_in_micro = conf["sleep"].as<unsigned>();
     unsigned seed_ = time(NULL);
 
@@ -59,7 +64,7 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < app_num; i++) {
         auto app_name = "app_" + std::to_string(i);
-        auto func_name = "empty";
+        auto func_name = "inc";
         auto coord_thread = get_coord(app_name, app_coord_map, mngt_socket);
         AppRegistration msg;
         msg.set_app_name(app_name);

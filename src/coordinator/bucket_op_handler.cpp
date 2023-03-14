@@ -23,7 +23,8 @@ void bucket_op_handler(logger log, string &serialized, SocketCache &pushers,
             app_buckets_map[app_name].insert(bucket_name);
             bucket_app_map[bucket_name] = app_name;
             response.set_error(KVSError::SUCCESS);
-            log->info("Create Bucket {}.", bucket_name);
+            //log->info("Create Bucket {}.", bucket_name);
+            std::cout << "Create Bucket " << bucket_name << ".\n";
         }
     } else if (request.operation_type() == BucketOperationType::DELETE_BUCKET) {
         // it means the bucket does not exist, so we return the error
@@ -37,7 +38,8 @@ void bucket_op_handler(logger log, string &serialized, SocketCache &pushers,
                 bucket_triggers_map.erase(bucket_name);
             }
             response.set_error(KVSError::SUCCESS);
-            log->info("Delete Bucket {}.", bucket_name);
+            //log->info("Delete Bucket {}.", bucket_name);
+            std::cout << "Delete Bucket " << bucket_name << ".\n";
         }
     }
         // unknow type

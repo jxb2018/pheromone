@@ -81,5 +81,6 @@ void app_register_handler(logger log, string &serialized, string &private_ip, un
         string address = "tcp://" + ip_status.first + ":" + std::to_string(TriggerUpdatePort);
         kZmqUtil->send_string(msg_serialized, &pushers[address]);
     }
-    log->info("Application registered. name: {}", appRegist.app_name());
+//    log->info("Application registered. name: {}", appRegist.app_name());
+    std::cout << "Application registered. name: " << appRegist.app_name() << std::endl;
 }
