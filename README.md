@@ -8,6 +8,19 @@ Pheromone applies two-level distributed scheduling for low-latency function invo
 The key design of Pheromone lies in data-centric function orchestration, which lets data trigger functions by making the consuming patterns of intermediate data (i.e., function results) explicit.
 Please see [our paper](https://arxiv.org/abs/2109.13492) for more details.
 
+## How to use it?
+
+First,
+```shell
+# mkdir
+mkdir /tmp/shm
+```
+
+Second,
+run `manager`, `executor`, `coordinator`, `schedule` with the environment variable `CONFIG_FILE=/home/tank/Desktop/pheromone/conf/config.yml`
+
+Third,
+run `client`
 
 ## Acknowledgement
 

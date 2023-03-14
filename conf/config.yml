@@ -11,12 +11,12 @@ coordinator:
   ip:
     private: 127.0.0.1
     public: 127.0.0.1
-  delay: 30
+  delay: 0
 
 # For Executor
 executor:
   func_dir: /tmp/shm/
-  wait: 30
+  wait: 0
   ip: 127.0.0.1
   thread_id: 0
 
@@ -25,7 +25,7 @@ scheduler:
     coord: 1
     io: 1
   func_dir: /tmp/shm/
-  delay: 30
+  delay: 0
   shared: 1
   forward_or_reject: 0
   user:

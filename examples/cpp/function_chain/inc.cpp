@@ -8,7 +8,6 @@ extern "C" {
         auto start_t = std::chrono::duration_cast<std::chrono::microseconds>(
             std::chrono::system_clock::now().time_since_epoch()).count();
 //         std::cout << "sleep function end: " << end_t << std::endl;
-        std::cout<< arg_values[0] << std::endl;
         int cur_value = stoi(string{arg_values[0]}) + 1;
         auto obj = library->create_object(5);
         auto val = static_cast<char *>(obj->get_value());
